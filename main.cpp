@@ -13,11 +13,12 @@ int main()
     ZeroMemory(&pi, sizeof(pi));
 
     //Create game in suspended state
+    printf("Starting Cube.exe...\n\n");
     if (!CreateProcess(NULL,
                   "Cube.exe",
                   NULL,
                   NULL,
-                  FALSE,
+                  true,
                   CREATE_SUSPENDED,
                   NULL,
                   NULL,
@@ -26,6 +27,9 @@ int main()
     {
         printf("Failed to create process: %lu", GetLastError());
         return 1;
+    }
+    else {
+        printf("Cube.exe was successfully started.\n\n");
     }
 
 
@@ -61,10 +65,13 @@ int main()
     ResumeThread(pi.hThread);
     CloseHandle(pi.hProcess);
 
-
-    WaitForSingleObject(pi.hThread, INFINITE);
-    for (HANDLE thread : threads){
-        CloseHandle(thread);
-    }
+    printf("\nAll available mods have been loaded.\n");
+    Sleep(1500);
+//
+//
+//    WaitForSingleObject(pi.hThread, INFINITE);
+//    for (HANDLE thread : threads){
+//        CloseHandle(thread);
+//    }
     return 0;
 }
