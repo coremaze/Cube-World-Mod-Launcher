@@ -11,6 +11,7 @@ int main()
     PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(si));
     ZeroMemory(&pi, sizeof(pi));
+    CreateDirectory("Mods", NULL);
 
     //Create game in suspended state
     printf("Starting Cube.exe...\n\n");
