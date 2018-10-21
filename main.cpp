@@ -2,10 +2,27 @@
 #include <windows.h>
 #include <vector>
 
+
 using namespace std;
+
+bool FileExists(LPCTSTR szPath)
+{
+  DWORD dwAttrib = GetFileAttributes(szPath);
+  return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+}
 
 int main()
 {
+    vector <std::string> modDLLs;
+
+    //The callback manager is required.
+    if ( !FileExists("CallbackManager.dll") ){
+        printf("Callback manager not found.\n");
+        Sleep(1000);
+        return 1;
+    }
+
+    modDLLs.push_back( std::string("CallbackManager.dll") );
     const char MOD_PATH[] = "Mods\\*.dll";
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -37,7 +54,7 @@ int main()
     //Find mods
     HANDLE hFind;
     WIN32_FIND_DATA data;
-    vector <std::string> modDLLs;
+
     hFind = FindFirstFile(MOD_PATH, &data);
     if (hFind != INVALID_HANDLE_VALUE) {
         do {
@@ -45,7 +62,6 @@ int main()
         } while (FindNextFile(hFind, &data));
         FindClose(hFind);
     }
-
 
 
     //Inject DLLs
