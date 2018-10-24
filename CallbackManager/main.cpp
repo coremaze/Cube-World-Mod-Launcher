@@ -54,21 +54,21 @@ _declspec(naked) void DLL_EXPORT ASMHandleMessage(){
     asm("jmp eax");
 }
 
-//Chunk Loaded
-typedef void (__stdcall *ChunkLoadedCallback)(unsigned int zone_ptr);
-std::vector<ChunkLoadedCallback> chunk_loaded_callbacks;
-extern "C" void DLL_EXPORT RegisterChunkLoadedCallback(ChunkLoadedCallback func){
-    chunk_loaded_callbacks.push_back(func);
+//Zone Loaded
+typedef void (__stdcall *ZoneLoadedCallback)(unsigned int zone_ptr);
+std::vector<ZoneLoadedCallback> zone_loaded_callbacks;
+extern "C" void DLL_EXPORT RegisterZoneLoadedCallback(ZoneLoadedCallback func){
+    zone_loaded_callbacks.push_back(func);
 }
-void __stdcall no_shenanigans HandleChunkLoaded(unsigned int zone_ptr){
-    for (ChunkLoadedCallback func : chunk_loaded_callbacks){
+void __stdcall no_shenanigans HandleZoneLoaded(unsigned int zone_ptr){
+    for (ZoneLoadedCallback func : zone_loaded_callbacks){
         func(zone_ptr);
     }
 }
-DWORD HandleChunkLoaded_ptr = (DWORD)&HandleChunkLoaded;
+DWORD HandleZoneLoaded_ptr = (DWORD)&HandleZoneLoaded;
 
-unsigned int ASMHandleChunkLoaded_JMP_back;
-_declspec(naked) void DLL_EXPORT ASMHandleChunkLoaded(){
+unsigned int ASMHandleZoneLoaded_JMP_back;
+_declspec(naked) void DLL_EXPORT ASMHandleZoneLoaded(){
     asm("push eax");
     asm("push ebx");
     asm("push ecx");
@@ -77,7 +77,7 @@ _declspec(naked) void DLL_EXPORT ASMHandleChunkLoaded(){
     asm("push esi");
 
     asm("push eax");
-    asm("call [_HandleChunkLoaded_ptr]");
+    asm("call [_HandleZoneLoaded_ptr]");
 
     asm("pop esi");
     asm("pop edi");
@@ -89,9 +89,49 @@ _declspec(naked) void DLL_EXPORT ASMHandleChunkLoaded(){
     asm("mov ecx, [ebx]"); //Original code
     asm("add ecx, 0x800D44");
 
-    asm("jmp [_ASMHandleChunkLoaded_JMP_back]");
+    asm("jmp [_ASMHandleZoneLoaded_JMP_back]");
 }
 
+
+//Zone Destructed
+typedef void (__stdcall *ZoneDeleteCallback)(unsigned int zone_ptr);
+std::vector<ZoneDeleteCallback> zone_delete_callbacks;
+extern "C" void DLL_EXPORT RegisterZoneDeleteCallback(ZoneDeleteCallback func){
+    zone_delete_callbacks.push_back(func);
+}
+void __stdcall no_shenanigans HandleZoneDelete(unsigned int zone_ptr){
+    for (ZoneDeleteCallback func : zone_delete_callbacks){
+        func(zone_ptr);
+    }
+}
+DWORD HandleZoneDelete_ptr = (DWORD)&HandleZoneDelete;
+
+unsigned int ASMHandleZoneDelete_JMP_back;
+_declspec(naked) void DLL_EXPORT ASMHandleZoneDelete(){
+    asm("push eax");
+    asm("push ebx");
+    asm("push ecx");
+    asm("push edx");
+    asm("push edi");
+    asm("push esi");
+
+    asm("push ecx"); //Zone ptr
+    asm("call [_HandleZoneDelete_ptr]");
+
+    asm("pop esi");
+    asm("pop edi");
+    asm("pop edx");
+    asm("pop ecx");
+    asm("pop ebx");
+    asm("pop eax");
+
+    asm("push ebp"); //Original code
+    asm("mov ebp, esp");
+    asm("push esi");
+    asm("mov esi, ecx");
+
+    asm("jmp [_ASMHandleZoneDelete_JMP_back]");
+}
 
 void WriteJMP(BYTE* location, BYTE* newFunction){
 	DWORD dwOldProtection;
@@ -107,10 +147,15 @@ extern "C" DLL_EXPORT BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason,
     switch (fdwReason)
     {
         case DLL_PROCESS_ATTACH:
+            //Chat
             WriteJMP((BYTE*)(base + 0x7E61A), (BYTE*)&ASMHandleMessage);
 
-            ASMHandleChunkLoaded_JMP_back = base + 0x6ACDE;
-            WriteJMP((BYTE*)(base + 0x6ACD6), (BYTE*)&ASMHandleChunkLoaded);
+            //Zone Load
+            ASMHandleZoneLoaded_JMP_back = base + 0x6ACDE;
+            WriteJMP((BYTE*)(base + 0x6ACD6), (BYTE*)&ASMHandleZoneLoaded);
+
+            ASMHandleZoneDelete_JMP_back = base + 0x224766;
+            WriteJMP((BYTE*)(base + 0x224760), (BYTE*)&ASMHandleZoneDelete);
 
             break;
     }
