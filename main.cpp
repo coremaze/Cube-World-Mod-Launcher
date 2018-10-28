@@ -15,6 +15,29 @@ int main()
 {
     vector <std::string> modDLLs;
 
+    //Cube world is obviously required
+    if (!FileExists("Cube.exe")){
+        printf("Cube World not found.\n");
+        Sleep(1000);
+        return 1;
+    }
+
+    FILE *file = fopen("Cube.exe", "rb");
+    fseek(file, 0, SEEK_END);
+    int fileSize = ftell(file);
+    fclose(file);
+
+    const int CUBE_SIZE = 3885568;
+    if (fileSize != CUBE_SIZE){
+        printf("Cube World was found, but it is not version 0.1.1. Please update your game.\n");
+        printf("Press enter to exit.\n");
+        cin.ignore();
+        return 1;
+    }
+
+
+
+
     //The callback manager is required.
     if ( !FileExists("CallbackManager.dll") ){
         printf("Callback manager not found.\n");
