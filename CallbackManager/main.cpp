@@ -175,8 +175,8 @@ _declspec(naked) void DLL_EXPORT ASMM3Check(){
     asm("jmp [_ASMM3Check_JMP_back]");
 
     asm("1:"); //Do nothing
-    asm("pop ebx");
     asm("pop eax");
+    asm("pop ebx");
     asm("jmp [_ASMM3Check_JMP_back]");
 }
 
