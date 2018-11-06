@@ -309,8 +309,7 @@ _declspec(naked) void __declspec(dllexport) ASMHandlePacket(){
     asm("je 0f"); //The packet was not handled
 
     asm("popad"); //The packet WAS handled
-    asm("mov cl, 1");
-    asm("mov [ebp-0x11D1], cl");
+    asm("mov cl, [ebp-0x11D1]");
     asm("jmp [_ASMHandlePacket_Already_Handled_JMP]");
 
     asm("0:"); //The packet was not handled
