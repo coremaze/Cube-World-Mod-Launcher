@@ -325,6 +325,35 @@ _declspec(naked) void __declspec(dllexport) ASMHandlePacket(){
 }
 
 
+MakeCallback(ReadyToSendCallback, void, RegisterReadyToSendCallback, ready_to_send_callbacks);
+void __stdcall no_shenanigans HandleReadyToSend(SOCKET s){
+    for (ReadyToSendCallback func : ready_to_send_callbacks){
+       func(s);
+    }
+}
+DWORD HandleReadyToSend_ptr = (DWORD)&HandleReadyToSend;
+
+unsigned int ASMHandleReadyToSend_JMP_Back;
+void no_shenanigans ASMHandleReadyToSend(){
+    asm("pushad");
+
+    asm("mov eax, [edi]"); //GameController
+    asm("push dword ptr [eax+0x8006CC]"); //socket
+    asm("call [_HandleReadyToSend_ptr]");
+
+    asm("popad");
+
+    asm("push 0"); //original code
+    asm("push 4"); //len
+    asm("lea eax, [ebp-0x2444]");
+
+    asm("jmp [_ASMHandleReadyToSend_JMP_Back]");
+
+
+}
+
+
+
 
 void WriteJMP(BYTE* location, BYTE* newFunction){
 	DWORD dwOldProtection;
@@ -370,6 +399,10 @@ extern "C" DLL_EXPORT BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason,
             ASMHandlePacket_Invalid_Packet_JMP = base + 0x6D0DD;
             ASMHandlePacket_Valid_Packet_JMP = base + 0x6B8B0;
             WriteJMP((BYTE*)(base + 0x6B8A7), (BYTE*)&ASMHandlePacket);
+
+            //Ready to send packet
+            ASMHandleReadyToSend_JMP_Back = base + 0x69C92;
+            WriteJMP((BYTE*)(base + 0x69C88), (BYTE*)&ASMHandleReadyToSend);
 
             break;
     }
