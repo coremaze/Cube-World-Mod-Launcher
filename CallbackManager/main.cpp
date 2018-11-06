@@ -276,6 +276,57 @@ _declspec(naked) void DLL_EXPORT ASMAbilitiesCheck(){
     asm("jmp [_ASMAbilitiesCheck_JMP_Back]");
 }
 
+
+
+
+
+//Packets
+MakeCallback(PacketCallback, int, RegisterPacketCallback, packet_callbacks);
+int __stdcall no_shenanigans HandlePacket(unsigned int packet_ID, unsigned int socket_ptr){
+    int handled = 0;
+    for (PacketCallback func : packet_callbacks){
+        unsigned int handled_2 = func(packet_ID, socket_ptr);
+        if (handled_2 != 0){
+            handled = handled_2;
+        }
+    }
+    return handled;
+}
+DWORD HandlePacket_ptr = (DWORD)&HandlePacket;
+
+
+unsigned int ASMHandlePacket_Invalid_Packet_JMP;
+unsigned int ASMHandlePacket_Valid_Packet_JMP;
+unsigned int ASMHandlePacket_Already_Handled_JMP;
+_declspec(naked) void __declspec(dllexport) ASMHandlePacket(){
+    asm("pushad");
+
+    asm("push [ebp-0x11D8]"); //socket
+    asm("push [ebp-0x1220]"); //Packet ID
+    asm("call [_HandlePacket_ptr]");
+
+    asm("cmp eax, 0");
+    asm("je 0f"); //The packet was not handled
+
+    asm("popad"); //The packet WAS handled
+    asm("mov cl, 1");
+    asm("mov [ebp-0x11D1], cl");
+    asm("jmp [_ASMHandlePacket_Already_Handled_JMP]");
+
+    asm("0:"); //The packet was not handled
+    asm("popad");
+    asm("mov eax, [ebp-0x1220]");//original code
+    asm("cmp eax, 0xF");
+    asm("ja 1f");
+    asm("jmp [_ASMHandlePacket_Valid_Packet_JMP]");
+
+    asm("1:");
+    asm("jmp [_ASMHandlePacket_Invalid_Packet_JMP]");
+
+}
+
+
+
 void WriteJMP(BYTE* location, BYTE* newFunction){
 	DWORD dwOldProtection;
 	VirtualProtect(location, 5, PAGE_EXECUTE_READWRITE, &dwOldProtection);
@@ -283,6 +334,7 @@ void WriteJMP(BYTE* location, BYTE* newFunction){
     *((DWORD*)(location + 1)) = (DWORD)(( (unsigned INT32)newFunction - (unsigned INT32)location ) - 5);
 	VirtualProtect(location, 5, dwOldProtection, &dwOldProtection);
 }
+
 
 extern "C" DLL_EXPORT BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
@@ -313,6 +365,12 @@ extern "C" DLL_EXPORT BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason,
             //Check abilities
             ASMAbilitiesCheck_JMP_Back = base + 0x9B63A;
             WriteJMP((BYTE*)(base + 0x9B635), (BYTE*)&ASMAbilitiesCheck);
+
+            //Handle packet
+            ASMHandlePacket_Already_Handled_JMP = base + 0x6D0E3;
+            ASMHandlePacket_Invalid_Packet_JMP = base + 0x6D0DD;
+            ASMHandlePacket_Valid_Packet_JMP = base + 0x6B8B0;
+            WriteJMP((BYTE*)(base + 0x6B8A7), (BYTE*)&ASMHandlePacket);
 
             break;
     }
