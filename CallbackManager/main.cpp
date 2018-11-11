@@ -68,22 +68,12 @@ DWORD HandleZoneLoaded_ptr = (DWORD)&HandleZoneLoaded;
 
 unsigned int ASMHandleZoneLoaded_JMP_back;
 _declspec(naked) void DLL_EXPORT ASMHandleZoneLoaded(){
-    asm("push eax");
-    asm("push ebx");
-    asm("push ecx");
-    asm("push edx");
-    asm("push edi");
-    asm("push esi");
+    asm("pushad");
 
     asm("push eax");
     asm("call [_HandleZoneLoaded_ptr]");
 
-    asm("pop esi");
-    asm("pop edi");
-    asm("pop edx");
-    asm("pop ecx");
-    asm("pop ebx");
-    asm("pop eax");
+    asm("popad");
 
     asm("mov ecx, [ebx]"); //Original code
     asm("add ecx, 0x800D44");
@@ -103,22 +93,12 @@ DWORD HandleZoneDelete_ptr = (DWORD)&HandleZoneDelete;
 
 unsigned int ASMHandleZoneDelete_JMP_back;
 _declspec(naked) void DLL_EXPORT ASMHandleZoneDelete(){
-    asm("push eax");
-    asm("push ebx");
-    asm("push ecx");
-    asm("push edx");
-    asm("push edi");
-    asm("push esi");
+    asm("pushad");
 
     asm("push ecx"); //Zone ptr
     asm("call [_HandleZoneDelete_ptr]");
 
-    asm("pop esi");
-    asm("pop edi");
-    asm("pop edx");
-    asm("pop ecx");
-    asm("pop ebx");
-    asm("pop eax");
+    asm("popad");
 
     asm("push ebp"); //Original code
     asm("mov ebp, esp");
