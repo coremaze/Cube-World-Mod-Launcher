@@ -304,7 +304,7 @@ _declspec(naked) void __declspec(dllexport) ASMHandlePacket(){
 
 }
 
-
+//ready to send a packet
 MakeCallback(ReadyToSendCallback, void, RegisterReadyToSendCallback, ready_to_send_callbacks);
 void __stdcall no_shenanigans HandleReadyToSend(SOCKET s){
     for (ReadyToSendCallback func : ready_to_send_callbacks){
@@ -332,7 +332,30 @@ void no_shenanigans ASMHandleReadyToSend(){
 
 }
 
+//Finish crafting
+MakeCallback(FinishCraftingCallback, void, RegisterFinishCraftingCallback, finish_crafting_callbacks);
+void __stdcall no_shenanigans HandleFinishCrafting(){
+    for (FinishCraftingCallback func : finish_crafting_callbacks){
+       func();
+    }
+}
+DWORD HandleFinishCrafting_ptr = (DWORD)&HandleFinishCrafting;
 
+unsigned int ASMHandleFinishCrafting_JMP_Back;
+void no_shenanigans ASMHandleFinishCrafting(){
+    asm("pushad");
+
+    asm("call [_HandleFinishCrafting_ptr]");
+
+    asm("popad");
+
+    asm("mov ecx, [ebp-0xC]"); //original code
+    asm("mov dword ptr fs:[0], ecx");
+
+    asm("jmp [_ASMHandleFinishCrafting_JMP_Back]");
+
+
+}
 
 
 void WriteJMP(BYTE* location, BYTE* newFunction){
@@ -383,6 +406,9 @@ extern "C" DLL_EXPORT BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason,
             //Ready to send packet
             ASMHandleReadyToSend_JMP_Back = base + 0x69C92;
             WriteJMP((BYTE*)(base + 0x69C88), (BYTE*)&ASMHandleReadyToSend);
+
+            ASMHandleFinishCrafting_JMP_Back = base + 0x70D6B;
+            WriteJMP((BYTE*)(base + 0x70D61), (BYTE*)&ASMHandleFinishCrafting);
 
             break;
     }
