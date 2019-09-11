@@ -6,7 +6,7 @@
 #include "crc.h"
 
 #define CUBE_VERSION "1.0.0-0"
-#define CUBE_CRC 0x00000000
+#define CUBE_CRC 0x6AFF99F7
 
 using namespace std;
 
@@ -38,13 +38,14 @@ int main()
     }
 
     //The callback manager is required.
-    if ( !FileExists("CallbackManager.dll") ){
+    /*if ( !FileExists("CallbackManager.dll") ){
         printf("Callback manager not found.\n");
         Sleep(1000);
         return 1;
     }
 
     modDLLs.push_back( std::string("CallbackManager.dll") );
+    */
 
     Process process("Cube.exe");
 

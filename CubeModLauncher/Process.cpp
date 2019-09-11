@@ -26,7 +26,7 @@ bool Process::InjectDLL(string dllName) {
 }
 bool Process::Create() {
     return CreateProcess(NULL,
-                  "Cube.exe",
+                  (char*)path.c_str(),
                   NULL,
                   NULL,
                   true,

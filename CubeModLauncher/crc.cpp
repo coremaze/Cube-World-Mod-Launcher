@@ -57,12 +57,18 @@ unsigned int crc32_buf(const char* buf, unsigned long len)
 
 unsigned int crc32_file(const char* fileName){
     FILE* file = fopen(fileName, "rb");
+
     fseek(file, 0, SEEK_END);
     int fileSize = ftell(file);
-    char* fileContents = new char[fileSize];
+    char* fileContents = new char[fileSize+1];
+
+    fseek(file, 0, SEEK_SET);
     fread(fileContents, 1, fileSize, file);
     fclose(file);
+
     int result = crc32_buf(fileContents, fileSize);
+
     delete[] fileContents;
+
     return result;
 }
