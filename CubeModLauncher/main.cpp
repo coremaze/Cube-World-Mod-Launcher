@@ -6,7 +6,7 @@
 #include "crc.h"
 
 #define CUBE_VERSION "1.0.0-0"
-#define CUBE_CRC 0x6AFF99F7
+#define CUBE_CRC 0xDC91320A
 
 using namespace std;
 
@@ -18,7 +18,6 @@ bool FileExists(const char* fileName) {
 int main()
 {
     vector <std::string> modDLLs;
-
     //Cube world is obviously required
     if (!FileExists("Cube.exe")){
         printf("Cube World not found.\n");
@@ -75,16 +74,15 @@ int main()
 
 
     //Inject DLLs
-    vector <HANDLE> threads;
     for (string S_DLLName : modDLLs){
         printf("Loading %s\n", S_DLLName.c_str());
         process.InjectDLL(S_DLLName);
     }
 
-    process.Run();
-
     printf("\nAll available mods have been loaded.\n");
     Sleep(1500);
+    process.Run();
+    Sleep(3000);
 
     return 0;
 }
