@@ -102,23 +102,47 @@ extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD
                 // We should be loaded into the application's address space, so we can just LoadLibraryA
                 DLL* dll = new DLL(string("Mods\\") + data.cFileName);
                 dll->Load();
+                printf("Loaded %s\n", dll->fileName.c_str());
                 modDLLs.push_back(dll);
             } while (FindNextFile(hFind, &data));
             FindClose(hFind);
         }
 
 
+
         // Find all the functions the mods may export
         for (DLL* dll: modDLLs) {
             MUST_IMPORT(dll, ModMajorVersion);
             MUST_IMPORT(dll, ModMinorVersion);
-            MUST_IMPORT(dll, ModInitialize);
+            MUST_IMPORT(dll, ModPreInitialize);
+            IMPORT(dll, ModInitialize);
             IMPORT(dll, HandleNumber);
+        }
+
+        // Ensure version compatibility
+        for (DLL* dll: modDLLs) {
+            int majorVersion = ((int(*)())dll->ModMajorVersion)();
+            int minorVersion = ((int(*)())dll->ModMinorVersion)();
+            if (majorVersion != MOD_MAJOR_VERSION) {
+                printf("%s has major version %d but requires %d.\n", dll->fileName.c_str(), majorVersion, MOD_MAJOR_VERSION);
+                exit(1);
+            }
+
+            if (minorVersion > MOD_MINOR_VERSION) {
+                printf("%s has minor version %d but requires %d or lower.\n", dll->fileName.c_str(), minorVersion, MOD_MINOR_VERSION);
+                exit(1);
+            }
         }
 
         // Run Initialization routines on all mods
         for (DLL* dll: modDLLs) {
-            ((void(*)())dll->ModInitialize)();
+            ((void(*)())dll->ModPreInitialize)();
+        }
+
+        for (DLL* dll: modDLLs) {
+            if (dll->ModInitialize) {
+                ((void(*)())dll->ModInitialize)();
+            }
         }
 
     }

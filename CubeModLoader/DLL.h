@@ -9,6 +9,7 @@ class DLL
         std::string fileName;
         HMODULE handle;
 
+        FARPROC ModPreInitialize;
         FARPROC ModInitialize;
         FARPROC ModMajorVersion;
         FARPROC ModMinorVersion;
