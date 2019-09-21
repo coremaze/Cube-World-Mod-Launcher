@@ -15,7 +15,7 @@ class DLL
         FARPROC ModMinorVersion;
 
         // Callbacks
-        FARPROC HandleNumber;
+        FARPROC HandleChat;
 
         DLL(std::string fileName);
         HMODULE Load();

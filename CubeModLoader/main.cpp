@@ -19,6 +19,9 @@ dllname->name = GetProcAddress(dllname->handle, #name);\
 #define IMPORT(dllname, name)\
 dllname->name = GetProcAddress(dllname->handle, #name);
 
+#define PUSH_ALL "push rax\npush rbx\npush rcx\npush rdx\npush rsi\npush rdi\npush rbp\npush r8\npush r9\npush r10\npush r11\npush r12\npush r13\npush r14\npush r15\n"
+#define POP_ALL "pop r15\npop r14\npop r13\npop r12\npop r11\npop r10\npop r9\npop r8\npop rbp\npop rdi\npop rsi\npop rdx\npop rcx\npop rbx\npop rax\n"
+
 
 using namespace std;
 
@@ -41,10 +44,10 @@ void WriteFarJMP(void* source, void* destination) {
     VirtualProtect(location, 14, dwOldProtection, &dwOldProtection);
 }
 
-#include "callbacks/NumberHandler.h"
+ #include "callbacks/ChatHandler.h"
 
 void SetupHandlers() {
-    SetupNumberHandler();
+    SetupChatHandler();
 }
 
 extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
@@ -79,7 +82,7 @@ extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD
             MUST_IMPORT(dll, ModMinorVersion);
             MUST_IMPORT(dll, ModPreInitialize);
             IMPORT(dll, ModInitialize);
-            IMPORT(dll, HandleNumber);
+            IMPORT(dll, HandleChat);
         }
 
         // Ensure version compatibility

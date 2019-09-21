@@ -5,8 +5,13 @@
 #include "Process.h"
 #include "crc.h"
 
-#define CUBE_VERSION "1.0.0-0"
-#define CUBE_CRC 0xDC91320A
+#define CUBE_VERSION "0.9.1-0"
+#define CUBE_PACKED_CRC 0x8B2EE791
+#define CUBE_UNPACKED_CRC 0xC2845E38
+
+#define MODLOADER_CRC 0x5858F9D7
+
+#define CUBE_EXECUTABLE "cubeworld.exe"
 
 using namespace std;
 
@@ -15,41 +20,72 @@ bool FileExists(const char* fileName) {
     return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-int main() {
-    //Cube world is obviously required
-    if (!FileExists("Cube.exe")) {
-        printf("Cube World not found.\n");
-        Sleep(1000);
-        return 1;
+int Bail(int result){
+    printf("Press enter to exit.\n");
+    cin.ignore();
+    return result;
+}
+
+int main(int argc, char** argv) {
+    bool testMode = false;
+    if (argc >= 2 && !strcmp(argv[1], "test")) {
+        testMode = true;
+        printf("Test mode enabled. CRC checks will be bypassed.\n");
     }
 
-    unsigned int checksum = crc32_file("Cube.exe");
-    if (checksum != CUBE_CRC) {
+    //Cube world is obviously required
+    if (!FileExists(CUBE_EXECUTABLE)) {
+        printf("%s not found.\n", CUBE_EXECUTABLE);
+        return Bail(1);
+    }
+
+    unsigned int checksum = crc32_file(CUBE_EXECUTABLE);
+
+    if (testMode) {
+        printf("%s CRC: %08X\n", CUBE_EXECUTABLE, checksum);
+    }
+
+    // Check if the game is still packed
+    if (checksum == CUBE_PACKED_CRC && !testMode) {
+        printf("Cube World was found, but it is not unpacked.\n"
+               "Use Steamless to unpack %s.\n", CUBE_EXECUTABLE);
+        return Bail(1);
+    }
+
+
+    if (checksum != CUBE_UNPACKED_CRC && !testMode) {
         printf("Cube World was found, but it is not version %s.\n"
                "(Found CRC %08X, expected %08X)\n"
                "Please update your game.\n",
-               CUBE_VERSION, checksum, CUBE_CRC);
-        printf("Press enter to exit.\n");
-        cin.ignore();
-        return 1;
+               CUBE_VERSION, checksum, CUBE_UNPACKED_CRC);
+        return Bail(1);
     }
 
     //Inject our dll
     if ( !FileExists("CubeModLoader.dll") ) {
-        printf("Callback manager not found.\n");
-        Sleep(1000);
-        return 1;
+        printf("CubeModLoader.dll not found.\n");
+        return Bail(1);
     }
 
-    Process process("Cube.exe");
+    unsigned int loaderChecksum = crc32_file("CubeModLoader.dll");
+    if (loaderChecksum != MODLOADER_CRC && !testMode) {
+        printf("CubeModLoader.dll is the wrong version (%08X)\n", loaderChecksum);
+        return Bail(1);
+    }
+
+    if (testMode) {
+        printf("CubeModLoader.dll CRC: %08X\n", loaderChecksum);
+    }
+
+    Process process(CUBE_EXECUTABLE);
 
     //Create game in suspended state
-    printf("Starting Cube.exe...\n\n");
+    printf("Starting %s...\n\n", CUBE_EXECUTABLE);
     if (!process.Create()) {
         printf("Failed to create process: %lu", GetLastError());
-        return 1;
+        return Bail(1);
     } else {
-        printf("Cube.exe was successfully started.\n\n");
+        printf("%s was successfully started.\n\n", CUBE_EXECUTABLE);
     }
 
     process.InjectDLL( std::string("CubeModLoader.dll") );
