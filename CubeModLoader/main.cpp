@@ -12,7 +12,7 @@
 #define MUST_IMPORT(dllname, name)\
 dllname->name = GetProcAddress(dllname->handle, #name);\
             if (!dllname->name) {\
-                printf("%s does not export " #name ".\n", dllname->fileName.c_str());\
+                Popup("Error", "%s does not export " #name ".\n", dllname->fileName.c_str());\
                 exit(1);\
             }
 
@@ -21,6 +21,9 @@ dllname->name = GetProcAddress(dllname->handle, #name);
 
 #define PUSH_ALL "push rax\npush rbx\npush rcx\npush rdx\npush rsi\npush rdi\npush rbp\npush r8\npush r9\npush r10\npush r11\npush r12\npush r13\npush r14\npush r15\n"
 #define POP_ALL "pop r15\npop r14\npop r13\npop r12\npop r11\npop r10\npop r9\npop r8\npop rbp\npop rdi\npop rsi\npop rdx\npop rcx\npop rbx\npop rax\n"
+
+#define PREPARE_STACK "mov rax, rsp \n and rsp, 0xFFFFFFFFFFFFFFF0 \n push rax \n sub rsp, 0x28 \n"
+#define RESTORE_STACK "add rsp, 0x28 \n pop rsp \n"
 
 
 using namespace std;
@@ -50,14 +53,18 @@ void SetupHandlers() {
     SetupChatHandler();
 }
 
+void Popup(char* title, char* format, ... ){
+    char msg[512] = {0};
+    sprintf(msg, format);
+    MessageBoxA(0, msg, title, MB_OK | MB_ICONINFORMATION);
+}
+
 extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     switch (fdwReason) {
     case DLL_PROCESS_ATTACH:
         base = GetModuleHandle(NULL);
 
         SetupHandlers();
-
-        MessageBoxA(0, "hello!", "DLL Message", MB_OK | MB_ICONINFORMATION);
 
         //Find mods
         HANDLE hFind;
@@ -90,12 +97,12 @@ extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD
             int majorVersion = ((int(*)())dll->ModMajorVersion)();
             int minorVersion = ((int(*)())dll->ModMinorVersion)();
             if (majorVersion != MOD_MAJOR_VERSION) {
-                printf("%s has major version %d but requires %d.\n", dll->fileName.c_str(), majorVersion, MOD_MAJOR_VERSION);
+                Popup("Error", "%s has major version %d but requires %d.\n", dll->fileName.c_str(), majorVersion, MOD_MAJOR_VERSION);
                 exit(1);
             }
 
             if (minorVersion > MOD_MINOR_VERSION) {
-                printf("%s has minor version %d but requires %d or lower.\n", dll->fileName.c_str(), minorVersion, MOD_MINOR_VERSION);
+                Popup("Error", "%s has minor version %d but requires %d or lower.\n", dll->fileName.c_str(), minorVersion, MOD_MINOR_VERSION);
                 exit(1);
             }
         }
