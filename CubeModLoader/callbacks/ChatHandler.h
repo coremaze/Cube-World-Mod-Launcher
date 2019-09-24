@@ -15,7 +15,7 @@ void* ASMChatHandler_bail;
 void no_optimize ASMChatHandler() {
     asm(PUSH_ALL
 
-        "mov rcx, rdi \n" // The message
+        "mov rcx, rbx \n" // The message
 
         PREPARE_STACK
 
@@ -32,6 +32,7 @@ void no_optimize ASMChatHandler() {
         // original code
         "mov qword ptr [rbp+0x78], 7 \n"
         "mov [rbp+0x70], r12 \n"
+        "mov [rbp+0x60], r12w \n"
         "jmp [ASMChatHandler_jmpback] \n"
 
 
@@ -41,7 +42,7 @@ void no_optimize ASMChatHandler() {
        );
 }
 void SetupChatHandler() {
-    WriteFarJMP(base+0x95F88, (void*)&ASMChatHandler);
-    ASMChatHandler_jmpback = (void*)base+0x95F95;
-    ASMChatHandler_bail = (void*)base+0x966D3;
+    WriteFarJMP(base+0x95FE8, (void*)&ASMChatHandler);
+    ASMChatHandler_jmpback = (void*)base+0x95FFA;
+    ASMChatHandler_bail = (void*)base+0x96733;
 }

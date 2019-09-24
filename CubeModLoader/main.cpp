@@ -3,7 +3,7 @@
 #include <vector>
 #include "DLL.h"
 
-#define MOD_MAJOR_VERSION 1
+#define MOD_MAJOR_VERSION 2
 #define MOD_MINOR_VERSION 1
 
 
@@ -12,7 +12,9 @@
 #define MUST_IMPORT(dllname, name)\
 dllname->name = GetProcAddress(dllname->handle, #name);\
             if (!dllname->name) {\
-                Popup("Error", "%s does not export " #name ".\n", dllname->fileName.c_str());\
+                char ERROR_MESSAGE_POPUP[512] = {0};\
+                sprintf(ERROR_MESSAGE_POPUP, "%s does not export " #name ".\n", dllname->fileName.c_str());\
+                Popup("Error", ERROR_MESSAGE_POPUP);\
                 exit(1);\
             }
 
@@ -53,9 +55,7 @@ void SetupHandlers() {
     SetupChatHandler();
 }
 
-void Popup(char* title, char* format, ... ){
-    char msg[512] = {0};
-    sprintf(msg, format);
+void Popup(char* title, char* msg ){
     MessageBoxA(0, msg, title, MB_OK | MB_ICONINFORMATION);
 }
 
@@ -93,16 +93,19 @@ extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD
         }
 
         // Ensure version compatibility
+        char msg[512] = {0};
         for (DLL* dll: modDLLs) {
             int majorVersion = ((int(*)())dll->ModMajorVersion)();
             int minorVersion = ((int(*)())dll->ModMinorVersion)();
             if (majorVersion != MOD_MAJOR_VERSION) {
-                Popup("Error", "%s has major version %d but requires %d.\n", dll->fileName.c_str(), majorVersion, MOD_MAJOR_VERSION);
+                sprintf(msg, "%s has major version %d but requires %d.\n", dll->fileName.c_str(), majorVersion, MOD_MAJOR_VERSION);
+                Popup("Error", msg);
                 exit(1);
             }
 
             if (minorVersion > MOD_MINOR_VERSION) {
-                Popup("Error", "%s has minor version %d but requires %d or lower.\n", dll->fileName.c_str(), minorVersion, MOD_MINOR_VERSION);
+                sprintf(msg, "%s has minor version %d but requires %d or lower.\n", dll->fileName.c_str(), minorVersion, MOD_MINOR_VERSION);
+                Popup("Error", msg);
                 exit(1);
             }
         }
