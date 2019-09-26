@@ -3,7 +3,7 @@
 #include <vector>
 #include "DLL.h"
 
-#define MOD_MAJOR_VERSION 2
+#define MOD_MAJOR_VERSION 3
 #define MOD_MINOR_VERSION 1
 
 

@@ -42,7 +42,7 @@ void no_optimize ASMChatHandler() {
        );
 }
 void SetupChatHandler() {
-    WriteFarJMP(base+0x95FE8, (void*)&ASMChatHandler);
-    ASMChatHandler_jmpback = (void*)base+0x95FFA;
-    ASMChatHandler_bail = (void*)base+0x96733;
+    WriteFarJMP(base+0x97108, (void*)&ASMChatHandler);
+    ASMChatHandler_jmpback = (void*)base+0x9711A;
+    ASMChatHandler_bail = (void*)base+0x9785A;
 }
