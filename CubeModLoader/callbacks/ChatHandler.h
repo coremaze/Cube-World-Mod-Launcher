@@ -30,9 +30,9 @@ void no_optimize ASMChatHandler() {
         POP_ALL
 
         // original code
-        "mov qword ptr [rbp+0x78], 7 \n"
-        "mov [rbp+0x70], r12 \n"
-        "mov [rbp+0x60], r12w \n"
+        "mov qword ptr [rbp+0x88], 7 \n"
+        "mov [rbp+0x80], r12 \n"
+        "mov [rbp+0x70], r12w \n"
         "jmp [ASMChatHandler_jmpback] \n"
 
 
@@ -42,7 +42,7 @@ void no_optimize ASMChatHandler() {
        );
 }
 void SetupChatHandler() {
-    WriteFarJMP(base+0x97108, (void*)&ASMChatHandler);
-    ASMChatHandler_jmpback = (void*)base+0x9711A;
-    ASMChatHandler_bail = (void*)base+0x9785A;
+    WriteFarJMP(base+0x97198, (void*)&ASMChatHandler);
+    ASMChatHandler_jmpback = (void*)base+0x971B0;
+    ASMChatHandler_bail = (void*)base+0x9777A;
 }

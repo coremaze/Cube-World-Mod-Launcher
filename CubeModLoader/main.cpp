@@ -3,7 +3,7 @@
 #include <vector>
 #include "DLL.h"
 
-#define MOD_MAJOR_VERSION 3
+#define MOD_MAJOR_VERSION 4
 #define MOD_MINOR_VERSION 1
 
 
@@ -49,10 +49,12 @@ void WriteFarJMP(void* source, void* destination) {
     VirtualProtect(location, 14, dwOldProtection, &dwOldProtection);
 }
 
- #include "callbacks/ChatHandler.h"
+#include "callbacks/ChatHandler.h"
+#include "callbacks/P2PRequestHandler.h"
 
 void SetupHandlers() {
     SetupChatHandler();
+    SetupP2PRequestHandler();
 }
 
 void Popup(char* title, char* msg ){
@@ -90,6 +92,7 @@ extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD
             MUST_IMPORT(dll, ModPreInitialize);
             IMPORT(dll, ModInitialize);
             IMPORT(dll, HandleChat);
+            IMPORT(dll, HandleP2PRequest);
         }
 
         // Ensure version compatibility

@@ -5,11 +5,11 @@
 #include "Process.h"
 #include "crc.h"
 
-#define CUBE_VERSION "0.9.1-4"
-#define CUBE_PACKED_CRC 0x4CC03A4E
-#define CUBE_UNPACKED_CRC 0x6F879A76
+#define CUBE_VERSION "1.0.0-1"
+#define CUBE_PACKED_CRC 0xC7682619
+#define CUBE_UNPACKED_CRC 0xBA092543
 
-#define MODLOADER_CRC 0x2201A3EA
+#define MODLOADER_CRC 0x39D18E98
 
 #define CUBE_EXECUTABLE "cubeworld.exe"
 
