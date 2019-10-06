@@ -11,11 +11,11 @@
 
 #define MODLOADER_CRC 0x39D18E98
 
-#define CUBE_EXECUTABLE "cubeworld.exe"
+char* CUBE_EXECUTABLE = "cubeworld.exe";
 
 using namespace std;
 
-bool FileExists(const char* fileName) {
+bool FileExists(char* fileName) {
     DWORD dwAttrib = GetFileAttributes(fileName);
     return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
@@ -31,6 +31,9 @@ int main(int argc, char** argv) {
     if (argc >= 2 && !strcmp(argv[1], "test")) {
         testMode = true;
         printf("Test mode enabled. CRC checks will be bypassed.\n");
+        if (argc >= 3) {
+            CUBE_EXECUTABLE = argv[2];
+        }
     }
 
     //Cube world is obviously required
