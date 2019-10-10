@@ -11,7 +11,7 @@
 
 #define MODLOADER_CRC 0x39D18E98
 
-#define CUBE_EXECUTABLE "cubeworld.exe"
+const char* CUBE_EXECUTABLE = "cubeworld.exe";
 
 using namespace std;
 
@@ -31,6 +31,9 @@ int main(int argc, char** argv) {
     if (argc >= 2 && !strcmp(argv[1], "test")) {
         testMode = true;
         printf("Test mode enabled. CRC checks will be bypassed.\n");
+        if (argc >= 3) {
+            CUBE_EXECUTABLE = argv[2];
+        }
     }
 
     //Cube world is obviously required

@@ -57,7 +57,7 @@ void SetupHandlers() {
     SetupP2PRequestHandler();
 }
 
-void Popup(char* title, char* msg ){
+void Popup(const char* title, char* msg ){
     MessageBoxA(0, msg, title, MB_OK | MB_ICONINFORMATION);
 }
 
