@@ -67,18 +67,18 @@ int main(int argc, char** argv) {
 
     //Inject our dll
     if ( !FileExists(MODLOADER_DLL) ) {
-        printf("%dll not found.\n", MODLOADER_DLL);
+        printf("%s not found.\n", MODLOADER_DLL);
         return Bail(1);
     }
 
     unsigned int loaderChecksum = crc32_file(MODLOADER_DLL);
     if (loaderChecksum != MODLOADER_CRC && !testMode) {
-        printf("%dll is the wrong version (%08X)\n", MODLOADER_DLL, loaderChecksum);
+        printf("%s is the wrong version (%08X)\n", MODLOADER_DLL, loaderChecksum);
         return Bail(1);
     }
 
     if (testMode) {
-        printf("%dll CRC: %08X\n", MODLOADER_DLL, loaderChecksum);
+        printf("%s CRC: %08X\n", MODLOADER_DLL, loaderChecksum);
     }
 
     Process process(CUBE_EXECUTABLE);
