@@ -95,7 +95,7 @@ extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD
             IMPORT(dll, ModInitialize);
             IMPORT(dll, HandleChat);
             IMPORT(dll, HandleP2PRequest);
-            IMPORT(dll, HandleInventoryCheck);
+            IMPORT(dll, HandleCheckInventoryFull);
         }
 
         // Ensure version compatibility

@@ -17,7 +17,7 @@ class DLL
         // Callbacks
         FARPROC HandleChat;
         FARPROC HandleP2PRequest;
-        FARPROC HandleInventoryCheck;
+        FARPROC HandleCheckInventoryFull;
 
         DLL(std::string fileName);
         HMODULE Load();

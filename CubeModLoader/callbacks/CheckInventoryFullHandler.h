@@ -1,7 +1,7 @@
 int CheckInventoryFullHandler(void* player, void* item) {
     for (DLL* dll: modDLLs) {
-        if (dll->HandleInventoryCheck) {
-            if ( int result = ((int(*)(void*, void*))dll->HandleInventoryCheck)(player, item)  ){
+        if (dll->HandleCheckInventoryFull) {
+            if ( int result = ((int(*)(void*, void*))dll->HandleCheckInventoryFull)(player, item)  ){
                 return result;
             }
         }
@@ -16,9 +16,7 @@ void no_optimize ASMCheckInventoryFullHandler() {
     asm(PUSH_ALL
 
         PREPARE_STACK
-        "sub rsp, 0x0F \n"
         "call [CheckInventoryFullHandler_ptr] \n"
-        "add rsp, 0x0F \n"
 
         RESTORE_STACK
 
