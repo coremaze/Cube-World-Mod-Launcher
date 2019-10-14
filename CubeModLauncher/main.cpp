@@ -11,11 +11,12 @@
 
 #define MODLOADER_CRC 0x39D18E98
 
-const char* CUBE_EXECUTABLE = "cubeworld.exe";
+char* CUBE_EXECUTABLE = "cubeworld.exe";
+char* MODLOADER_DLL = "CubeModLoader.dll";
 
 using namespace std;
 
-bool FileExists(const char* fileName) {
+bool FileExists(char* fileName) {
     DWORD dwAttrib = GetFileAttributes(fileName);
     return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
@@ -65,19 +66,19 @@ int main(int argc, char** argv) {
     }
 
     //Inject our dll
-    if ( !FileExists("CubeModLoader.dll") ) {
-        printf("CubeModLoader.dll not found.\n");
+    if ( !FileExists(MODLOADER_DLL) ) {
+        printf("%s not found.\n", MODLOADER_DLL);
         return Bail(1);
     }
 
-    unsigned int loaderChecksum = crc32_file("CubeModLoader.dll");
+    unsigned int loaderChecksum = crc32_file(MODLOADER_DLL);
     if (loaderChecksum != MODLOADER_CRC && !testMode) {
-        printf("CubeModLoader.dll is the wrong version (%08X)\n", loaderChecksum);
+        printf("%s is the wrong version (%08X)\n", MODLOADER_DLL, loaderChecksum);
         return Bail(1);
     }
 
     if (testMode) {
-        printf("CubeModLoader.dll CRC: %08X\n", loaderChecksum);
+        printf("%s CRC: %08X\n", MODLOADER_DLL, loaderChecksum);
     }
 
     Process process(CUBE_EXECUTABLE);
@@ -91,7 +92,7 @@ int main(int argc, char** argv) {
         printf("%s was successfully started.\n\n", CUBE_EXECUTABLE);
     }
 
-    process.InjectDLL( std::string("CubeModLoader.dll") );
+    process.InjectDLL( std::string(MODLOADER_DLL) );
 
     // Need to give the loader some time to work
     // This is a horrible thing and probably will result in a race condition please help me
