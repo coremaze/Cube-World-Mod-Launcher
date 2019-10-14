@@ -20,7 +20,7 @@ bool Process::InjectDLL(string dllName) {
     LPVOID load_library = (LPVOID) GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "LoadLibraryA");
     LPVOID remote_string = (LPVOID) VirtualAllocEx(pi.hProcess, NULL, strlen(dllName.c_str()) + 1, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     WriteProcessMemory(pi.hProcess, remote_string, dllName.c_str(), strlen(dllName.c_str()) + 1, NULL);
-    HANDLE thread = CreateRemoteThread(pi.hProcess, NULL, NULL, (LPTHREAD_START_ROUTINE) load_library, remote_string, CREATE_SUSPENDED, NULL);
+    HANDLE thread = CreateRemoteThread(pi.hProcess, NULL, 0, (LPTHREAD_START_ROUTINE) load_library, remote_string, CREATE_SUSPENDED, NULL);
     ResumeThread(thread);
     return true;
 }
