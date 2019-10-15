@@ -207,7 +207,7 @@ extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD
 
         // Don't allow this to run more than once
         if (already_ran)
-            return 1;
+            return true;
 
         already_ran = true;
 
