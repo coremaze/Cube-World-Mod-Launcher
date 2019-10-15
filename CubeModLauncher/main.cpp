@@ -9,7 +9,7 @@ char* MODLOADER_DLL = "CubeModLoader.dll";
 
 using namespace std;
 
-bool FileExists(char* fileName) {
+bool FileExists(const char* fileName) {
     DWORD dwAttrib = GetFileAttributes(fileName);
     return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
