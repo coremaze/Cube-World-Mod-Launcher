@@ -4,8 +4,8 @@
 #include <vector>
 #include "Process.h"
 
-char* CUBE_EXECUTABLE = "cubeworld.exe";
-char* MODLOADER_DLL = "CubeModLoader.dll";
+const char* CUBE_EXECUTABLE = "cubeworld.exe";
+const char* MODLOADER_DLL = "CubeModLoader.dll";
 
 using namespace std;
 
