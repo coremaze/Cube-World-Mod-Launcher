@@ -168,6 +168,7 @@ void no_optimize ASMStartMods() {
 }
 
 void PatchFreeImage(){
+    // Thanks to frognik for showing off this method!
     DWORD oldProtect;
     void* patchaddr = (void*)GetModuleHandleA("FreeImage.dll") + 0x1E8C12;
     VirtualProtect((LPVOID)patchaddr, 8, PAGE_EXECUTE_READWRITE, &oldProtect);
