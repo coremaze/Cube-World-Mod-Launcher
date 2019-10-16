@@ -1,8 +1,10 @@
+#include "main.h"
 #include <iostream>
 #include <windows.h>
 #include <vector>
 #include "DLL.h"
 #include "crc.h"
+#include "mutex.h"
 
 #define MOD_MAJOR_VERSION 4
 #define MOD_MINOR_VERSION 2
@@ -14,27 +16,6 @@
 #define MODLOADER_NAME "CubeModLoader"
 
 
-#define no_optimize __attribute__((optimize("O0")))
-
-#define MUST_IMPORT(dllname, name)\
-dllname->name = GetProcAddress(dllname->handle, #name);\
-            if (!dllname->name) {\
-                char ERROR_MESSAGE_POPUP[512] = {0};\
-                sprintf(ERROR_MESSAGE_POPUP, "%s does not export " #name ".\n", dllname->fileName.c_str());\
-                Popup("Error", ERROR_MESSAGE_POPUP);\
-                exit(1);\
-            }
-
-#define IMPORT(dllname, name)\
-dllname->name = GetProcAddress(dllname->handle, #name);
-
-#define PUSH_ALL "push rax\npush rbx\npush rcx\npush rdx\npush rsi\npush rdi\npush rbp\npush r8\npush r9\npush r10\npush r11\npush r12\npush r13\npush r14\npush r15\n"
-#define POP_ALL "pop r15\npop r14\npop r13\npop r12\npop r11\npop r10\npop r9\npop r8\npop rbp\npop rdi\npop rsi\npop rdx\npop rcx\npop rbx\npop rax\n"
-
-#define PREPARE_STACK "mov rax, rsp \n and rsp, 0xFFFFFFFFFFFFFFF0 \n push rax \n sub rsp, 0x28 \n"
-#define RESTORE_STACK "add rsp, 0x28 \n pop rsp \n"
-
-
 using namespace std;
 
 void* base; // Module base
@@ -44,21 +25,6 @@ void* initterm_e; // A pointer to a function which is run extremely soon after s
 const size_t BYTES_TO_MOVE = 14; // The size of a far jump
 char initterm_e_remember[BYTES_TO_MOVE]; // We'll use this to store the code we overwrite in initterm_e, so we can put it back later.
 
-void WriteFarJMP(void* source, void* destination) {
-    DWORD dwOldProtection;
-    VirtualProtect(source, 14, PAGE_EXECUTE_READWRITE, &dwOldProtection);
-    char* location = (char*)source;
-
-    // Far jump
-    *((UINT16*)&location[0]) = 0x25FF;
-
-    // mode
-    *((UINT32*)&location[2]) = 0x00000000;
-
-    *((UINT64*)&location[6]) = (UINT64)destination;
-
-    VirtualProtect(location, 14, dwOldProtection, &dwOldProtection);
-}
 
 #include "callbacks/ChatHandler.h"
 #include "callbacks/P2PRequestHandler.h"
@@ -70,22 +36,21 @@ void SetupHandlers() {
     SetupCheckInventoryFullHandler();
 }
 
-void Popup(const char* title, const char* msg ) {
-    MessageBoxA(0, msg, title, MB_OK | MB_ICONINFORMATION);
-}
-
-void PrintLoadedMods() {
-    std::string mods("Mods Loaded:\n");
-    for (DLL* dll : modDLLs) {
-        mods += dll->fileName;
-        mods += "\n";
-    }
-    Popup("Loaded Mods", mods.c_str());
-}
 
 // Handles injecting callbacks and the mods
+bool already_loaded_mods = false;
+mutex already_loaded_mods_mtx;
 void StartMods() {
     char msg[256] = {0};
+
+    already_loaded_mods_mtx.lock();
+    // Don't allow this to run more than once
+    if (already_loaded_mods) {
+        already_loaded_mods_mtx.unlock();
+        return;
+    }
+    already_loaded_mods = true;
+    already_loaded_mods_mtx.unlock();
 
     SetupHandlers();
 
@@ -149,6 +114,8 @@ void StartMods() {
 }
 void* StartMods_ptr = (void*)&StartMods;
 
+
+
 void no_optimize ASMStartMods() {
     asm(PUSH_ALL
         PREPARE_STACK
@@ -199,17 +166,51 @@ void CopyInitializationBack() {
 }
 void* CopyInitializationBack_ptr = (void*)&CopyInitializationBack;
 
-bool already_ran = false;
+
+void Popup(const char* title, const char* msg ) {
+    MessageBoxA(0, msg, title, MB_OK | MB_ICONINFORMATION);
+}
+
+void PrintLoadedMods() {
+    std::string mods("Mods Loaded:\n");
+    for (DLL* dll : modDLLs) {
+        mods += dll->fileName;
+        mods += "\n";
+    }
+    Popup("Loaded Mods", mods.c_str());
+}
+
+void WriteFarJMP(void* source, void* destination) {
+    DWORD dwOldProtection;
+    VirtualProtect(source, 14, PAGE_EXECUTE_READWRITE, &dwOldProtection);
+    char* location = (char*)source;
+
+    // Far jump
+    *((UINT16*)&location[0]) = 0x25FF;
+
+    // mode
+    *((UINT32*)&location[2]) = 0x00000000;
+
+    *((UINT64*)&location[6]) = (UINT64)destination;
+
+    VirtualProtect(location, 14, dwOldProtection, &dwOldProtection);
+}
+
+bool already_initialized = false;
+mutex already_initialized_mtx;
 extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     switch (fdwReason) {
     case DLL_PROCESS_ATTACH:
-        base = GetModuleHandle(NULL);
 
-        // Don't allow this to run more than once
-        if (already_ran)
+        already_initialized_mtx.lock();
+        if (already_initialized) {
+            already_initialized_mtx.unlock();
             return true;
+        }
+        already_initialized = true;
+        already_initialized_mtx.unlock();
 
-        already_ran = true;
+        base = GetModuleHandle(NULL);
 
         char msg[256] = {0};
 
