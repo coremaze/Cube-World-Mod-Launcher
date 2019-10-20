@@ -21,10 +21,8 @@ using namespace std;
 void* base; // Module base
 vector <DLL*> modDLLs; // Every mod we've loaded
 HMODULE hSelf; // A handle to ourself, to prevent being unloaded
-void* initterm_e; // A pointer to a function which is run extremely soon after starting, or after being unpacked
-const size_t BYTES_TO_MOVE = 14; // The size of a far jump
-char initterm_e_remember[BYTES_TO_MOVE]; // We'll use this to store the code we overwrite in initterm_e, so we can put it back later.
-
+void** initterm_eReference; // A pointer-pointer to a function which is run extremely soon after starting, or after being unpacked
+void* initterm_e; // A pointer to that function
 
 #include "callbacks/ChatHandler.h"
 #include "callbacks/P2PRequestHandler.h"
@@ -123,9 +121,6 @@ void no_optimize ASMStartMods() {
         // Initialize mods and callbacks
         "call [StartMods_ptr] \n"
 
-        // We can put initterm_e back how we found it.
-        "call [CopyInitializationBack_ptr] \n"
-
         RESTORE_STACK
         POP_ALL
 
@@ -135,37 +130,30 @@ void no_optimize ASMStartMods() {
 }
 
 void PatchFreeImage(){
-    // Thanks to frognik for showing off this method!
+    // Patch FreeImage, because Windows 8 and higher do not work properly with it.
     DWORD oldProtect;
-    void* patchaddr = (void*)GetModuleHandleA("FreeImage.dll") + 0x1E8C12;
-    VirtualProtect((LPVOID)patchaddr, 8, PAGE_EXECUTE_READWRITE, &oldProtect);
-    *(uint64_t*)patchaddr = 0x909090000000A8E9;
+    void* patchaddr = (void*)GetModuleHandleA("FreeImage.dll") + 0x1E8C4E;
+    VirtualProtect((LPVOID)patchaddr, 9, PAGE_EXECUTE_READWRITE, &oldProtect);
+    memset(patchaddr, 0x90, 9);
+    VirtualProtect((LPVOID)patchaddr, 9, oldProtect, &oldProtect);
+
+    patchaddr += 0x14;
+    VirtualProtect((LPVOID)patchaddr, 14, PAGE_EXECUTE_READWRITE, &oldProtect);
+    memset(patchaddr, 0x90, 14);
+    VirtualProtect((LPVOID)patchaddr, 14, oldProtect, &oldProtect);
 }
 
-void InitializationPatch() {
-    // Get pointer to initterm_e
-    initterm_e = *(void**)(base + 0x42CBD8);
+void PatchInitterm_ePtr() {
+    // Get ** to initterm_e
+    initterm_eReference = (void**)(base + 0x42CBD8);
 
-    // Store old code, we'll copy it back once we regain control.
-    memcpy(initterm_e_remember, initterm_e, BYTES_TO_MOVE);
+    initterm_e = *initterm_eReference;
 
-    // Write a jump to our code
-    WriteFarJMP(initterm_e, (void*)&ASMStartMods);
+    DWORD oldProtect;
+    VirtualProtect((LPVOID)initterm_eReference, 8, PAGE_EXECUTE_READWRITE, &oldProtect);
+    *initterm_eReference = (void*)&ASMStartMods;
+    VirtualProtect((LPVOID)initterm_eReference, 8, oldProtect, &oldProtect);
 }
-
-// This restores initterm_e to how it was before we hijacked it.
-void CopyInitializationBack() {
-    DWORD dwOldProtection;
-    VirtualProtect(initterm_e, BYTES_TO_MOVE, PAGE_EXECUTE_READWRITE, &dwOldProtection);
-
-    memcpy(initterm_e, initterm_e_remember, BYTES_TO_MOVE);
-
-    VirtualProtect(initterm_e, BYTES_TO_MOVE, dwOldProtection, &dwOldProtection);
-
-    return;
-}
-void* CopyInitializationBack_ptr = (void*)&CopyInitializationBack;
-
 
 void Popup(const char* title, const char* msg ) {
     MessageBoxA(0, msg, title, MB_OK | MB_ICONINFORMATION);
@@ -202,6 +190,7 @@ extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD
     switch (fdwReason) {
     case DLL_PROCESS_ATTACH:
 
+
         already_initialized_mtx.lock();
         if (already_initialized) {
             already_initialized_mtx.unlock();
@@ -236,7 +225,7 @@ extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD
         uint32_t checksum = crc32_file(cubePath);
         if (checksum == CUBE_PACKED_CRC || checksum == CUBE_UNPACKED_CRC) {
             // Patch some code to run StartMods. This method makes it work with AND without SteamStub.
-            InitializationPatch();
+            PatchInitterm_ePtr();
         } else {
             sprintf(msg, "%s does not seem to be version %s. CRC %08X", cubePath, CUBE_VERSION, checksum);
             Popup("Error", msg);
