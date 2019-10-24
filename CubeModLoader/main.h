@@ -28,6 +28,22 @@ dllname->name = GetProcAddress(dllname->handle, #name);
 #define PREPARE_STACK "mov rax, rsp \n and rsp, 0xFFFFFFFFFFFFFFF0 \n push rax \n sub rsp, 0x28 \n"
 #define RESTORE_STACK "add rsp, 0x28 \n pop rsp \n"
 
+#define GETTER_VAR(vartype, varname)\
+	static __attribute__((used)) vartype varname;\
+	extern "C" vartype Get_##varname(){return varname;}
+
+#define DEREF_JMP(varname)\
+	"sub rsp, 8 \n"\
+	"push rax \n"\
+	"call Get_"#varname" \n"\
+	"mov [rsp+8], rax \n"\
+	"pop rax \n"\
+	"ret \n"
+
+#define global static __attribute__((used))
+
+void* Offset(void* x1, uint64_t x2);
+
 
 
 

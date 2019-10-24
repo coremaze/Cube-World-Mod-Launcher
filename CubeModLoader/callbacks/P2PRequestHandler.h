@@ -1,4 +1,4 @@
-int P2PRequestHandler(long long steamID) {
+extern "C" int P2PRequestHandler(long long steamID) {
     for (DLL* dll: modDLLs) {
         if (dll->HandleP2PRequest) {
             if ( int result = ((int(*)(long long))dll->HandleP2PRequest)(steamID)  ){
@@ -8,19 +8,19 @@ int P2PRequestHandler(long long steamID) {
     }
     return 0;
 }
-void* P2PRequestHandler_ptr = (void*)&P2PRequestHandler;
 
-void* ASMP2PRequestHandler_jmpback;
-void* ASMP2PRequestHandler_block;
-void* ASMP2PRequestHandler_allow;
-void no_optimize ASMP2PRequestHandler() {
-    asm(PUSH_ALL
+GETTER_VAR(void*, ASMP2PRequestHandler_jmpback);
+GETTER_VAR(void*, ASMP2PRequestHandler_block);
+GETTER_VAR(void*, ASMP2PRequestHandler_allow);
+void ASMP2PRequestHandler() {
+    asm(".intel_syntax \n"
+		PUSH_ALL
 
         "mov rcx, [rdi] \n" //incoming steam id
 
         PREPARE_STACK
 
-        "call [P2PRequestHandler_ptr] \n"
+        "call P2PRequestHandler \n"
 
         RESTORE_STACK
 
@@ -42,21 +42,21 @@ void no_optimize ASMP2PRequestHandler() {
         "mov rax, [rcx] \n"
         "call qword ptr [rax+0x18] \n"
 
-        "jmp [ASMP2PRequestHandler_jmpback] \n"
+        DEREF_JMP(ASMP2PRequestHandler_jmpback)
 
 
         "1: \n"  //block
         POP_ALL
-        "jmp [ASMP2PRequestHandler_block] \n"
+		DEREF_JMP(ASMP2PRequestHandler_block)
 
         "2: \n" //allow
         POP_ALL
-        "jmp [ASMP2PRequestHandler_allow] \n"
+        DEREF_JMP(ASMP2PRequestHandler_allow)
        );
 }
 void SetupP2PRequestHandler() {
-    WriteFarJMP(base+0x9F6DF, (void*)&ASMP2PRequestHandler);
-    ASMP2PRequestHandler_jmpback = (void*)base+0x9F6ED;
-    ASMP2PRequestHandler_block = (void*)base+0x9F7A6;
-    ASMP2PRequestHandler_allow = (void*)base+0x9F783;
+    WriteFarJMP(Offset(base, 0x9F6DF), (void*)&ASMP2PRequestHandler);
+    ASMP2PRequestHandler_jmpback = Offset(base, 0x9F6ED);
+    ASMP2PRequestHandler_block = Offset(base, 0x9F7A6);
+    ASMP2PRequestHandler_allow = Offset(base, 0x9F783);
 }

@@ -1,4 +1,4 @@
-int CheckInventoryFullHandler(void* player, void* item) {
+extern "C" int CheckInventoryFullHandler(void* player, void* item) {
     for (DLL* dll: modDLLs) {
         if (dll->HandleCheckInventoryFull) {
             if ( int result = ((int(*)(void*, void*))dll->HandleCheckInventoryFull)(player, item)  ){
@@ -8,15 +8,15 @@ int CheckInventoryFullHandler(void* player, void* item) {
     }
     return 0;
 }
-void* CheckInventoryFullHandler_ptr = (void*)&CheckInventoryFullHandler;
 
-void* ASMCheckInventoryFullHandler_jmpback;
-void* ASMCheckInventoryFullHandler_retn;
-void no_optimize ASMCheckInventoryFullHandler() {
-    asm(PUSH_ALL
+GETTER_VAR(void*, ASMCheckInventoryFullHandler_jmpback);
+GETTER_VAR(void*, ASMCheckInventoryFullHandler_retn);
+__attribute__((naked)) void ASMCheckInventoryFullHandler() {
+    asm(".intel_syntax \n"
+		PUSH_ALL
 
         PREPARE_STACK
-        "call [CheckInventoryFullHandler_ptr] \n"
+        "call CheckInventoryFullHandler \n"
 
         RESTORE_STACK
 
@@ -37,22 +37,22 @@ void no_optimize ASMCheckInventoryFullHandler() {
         "push    r14 \n"
         "push    r15 \n"
         "sub     rsp, 0x20 \n"
-        "jmp [ASMCheckInventoryFullHandler_jmpback] \n"
+		DEREF_JMP(ASMCheckInventoryFullHandler_jmpback)
 
 
         "1: \n"  //full
         POP_ALL
         "xor al,al \n"
-        "jmp [ASMCheckInventoryFullHandler_retn] \n"
+		DEREF_JMP(ASMCheckInventoryFullHandler_retn)
 
         "2: \n" //not
         POP_ALL
         "mov al,1 \n"
-        "jmp [ASMCheckInventoryFullHandler_retn] \n"
+		DEREF_JMP(ASMCheckInventoryFullHandler_retn)
        );
 }
 void SetupCheckInventoryFullHandler() {
-    WriteFarJMP(base+0x50670, (void*)&ASMCheckInventoryFullHandler);
-    ASMCheckInventoryFullHandler_jmpback = (void*)base+0x5067F;
-    ASMCheckInventoryFullHandler_retn = (void*)base+0x507A0;
+    WriteFarJMP(Offset(base, 0x50670), (void*)&ASMCheckInventoryFullHandler);
+    ASMCheckInventoryFullHandler_jmpback = Offset(base, 0x5067F);
+    ASMCheckInventoryFullHandler_retn = Offset(base, 0x507A0);
 }

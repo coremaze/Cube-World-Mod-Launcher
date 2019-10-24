@@ -1,4 +1,4 @@
-int ChatHandler(wchar_t* msg) {
+extern "C" int ChatHandler(wchar_t* msg) {
     for (DLL* dll: modDLLs) {
         if (dll->HandleChat) {
             if (  ((int(*)(wchar_t*))dll->HandleChat)(msg)  ){
@@ -8,18 +8,18 @@ int ChatHandler(wchar_t* msg) {
     }
     return 0;
 }
-void* ChatHandler_ptr = (void*)&ChatHandler;
 
-void* ASMChatHandler_jmpback;
-void* ASMChatHandler_bail;
-void no_optimize ASMChatHandler() {
-    asm(PUSH_ALL
+GETTER_VAR(void*, ASMChatHandler_jmpback);
+GETTER_VAR(void*, ASMChatHandler_bail);
+void ASMChatHandler() {
+    asm(".intel_syntax \n"
+		PUSH_ALL
 
         "mov rcx, rbx \n" // The message
 
         PREPARE_STACK
 
-        "call [ChatHandler_ptr] \n"
+        "call ChatHandler \n"
 
         RESTORE_STACK
 
@@ -33,16 +33,16 @@ void no_optimize ASMChatHandler() {
         "mov qword ptr [rbp+0x88], 7 \n"
         "mov [rbp+0x80], r12 \n"
         "mov [rbp+0x70], r12w \n"
-        "jmp [ASMChatHandler_jmpback] \n"
+		DEREF_JMP(ASMChatHandler_jmpback)
 
 
         "bail: \n"
         POP_ALL
-        "jmp [ASMChatHandler_bail]"
+		DEREF_JMP(ASMChatHandler_bail)
        );
 }
 void SetupChatHandler() {
-    WriteFarJMP(base+0x97198, (void*)&ASMChatHandler);
-    ASMChatHandler_jmpback = (void*)base+0x971B0;
-    ASMChatHandler_bail = (void*)base+0x9777A;
+    WriteFarJMP(Offset(base, 0x97198), (void*)&ASMChatHandler);
+    ASMChatHandler_jmpback = Offset(base, 0x971B0);
+    ASMChatHandler_bail = Offset(base, 0x9777A);
 }

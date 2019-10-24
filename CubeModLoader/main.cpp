@@ -18,11 +18,11 @@
 
 using namespace std;
 
-void* base; // Module base
-vector <DLL*> modDLLs; // Every mod we've loaded
-HMODULE hSelf; // A handle to ourself, to prevent being unloaded
-void** initterm_eReference; // A pointer-pointer to a function which is run extremely soon after starting, or after being unpacked
-void* initterm_e; // A pointer to that function
+global void* base; // Module base
+global vector <DLL*> modDLLs; // Every mod we've loaded
+global HMODULE hSelf; // A handle to ourself, to prevent being unloaded
+global void** initterm_eReference; // A pointer-pointer to a function which is run extremely soon after starting, or after being unpacked
+GETTER_VAR(void*, initterm_e); // A pointer to that function
 
 #include "callbacks/ChatHandler.h"
 #include "callbacks/P2PRequestHandler.h"
@@ -38,7 +38,7 @@ void SetupHandlers() {
 // Handles injecting callbacks and the mods
 bool already_loaded_mods = false;
 mutex already_loaded_mods_mtx;
-void StartMods() {
+extern "C" void StartMods() {
     char msg[256] = {0};
 
     already_loaded_mods_mtx.lock();
@@ -110,34 +110,33 @@ void StartMods() {
     if (hSelf) PrintLoadedMods();
     return;
 }
-void* StartMods_ptr = (void*)&StartMods;
 
 
-
-void no_optimize ASMStartMods() {
-    asm(PUSH_ALL
+void ASMStartMods() {
+    asm(".intel_syntax \n"
+		PUSH_ALL
         PREPARE_STACK
 
         // Initialize mods and callbacks
-        "call [StartMods_ptr] \n"
+        "call StartMods \n"
 
         RESTORE_STACK
         POP_ALL
 
         // Run initterm_e properly this time.
-        "jmp [initterm_e] \n"
+		DEREF_JMP(initterm_e)
         );
 }
 
 void PatchFreeImage(){
     // Patch FreeImage, because Windows 8 and higher do not work properly with it.
     DWORD oldProtect;
-    void* patchaddr = (void*)GetModuleHandleA("FreeImage.dll") + 0x1E8C4E;
+    void* patchaddr = Offset(GetModuleHandleA("FreeImage.dll"), 0x1E8C4E);
     VirtualProtect((LPVOID)patchaddr, 9, PAGE_EXECUTE_READWRITE, &oldProtect);
     memset(patchaddr, 0x90, 9);
     VirtualProtect((LPVOID)patchaddr, 9, oldProtect, &oldProtect);
 
-    patchaddr += 0x14;
+    patchaddr = Offset(patchaddr, 0x14);
     VirtualProtect((LPVOID)patchaddr, 14, PAGE_EXECUTE_READWRITE, &oldProtect);
     memset(patchaddr, 0x90, 14);
     VirtualProtect((LPVOID)patchaddr, 14, oldProtect, &oldProtect);
@@ -145,7 +144,7 @@ void PatchFreeImage(){
 
 void PatchInitterm_ePtr() {
     // Get ** to initterm_e
-    initterm_eReference = (void**)(base + 0x42CBD8);
+    initterm_eReference = (void**)(Offset(base, 0x42CBD8));
 
     initterm_e = *initterm_eReference;
 
@@ -182,6 +181,10 @@ void WriteFarJMP(void* source, void* destination) {
     *((UINT64*)&location[6]) = (UINT64)destination;
 
     VirtualProtect(location, 14, dwOldProtection, &dwOldProtection);
+}
+
+void* Offset(void* x1, uint64_t x2) {
+	return (void*)((char*)x1 + x2);
 }
 
 bool already_initialized = false;
