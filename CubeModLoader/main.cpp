@@ -81,32 +81,33 @@ extern "C" void StartMods() {
     }
 
     // Ensure version compatibility
+	for (DLL* dll : modDLLs) {
+		int majorVersion = ((int(*)())dll->ModMajorVersion)();
+		int minorVersion = ((int(*)())dll->ModMinorVersion)();
+		if (majorVersion != MOD_MAJOR_VERSION) {
+			sprintf(msg, "%s has major version %d but requires %d.\n", dll->fileName.c_str(), majorVersion, MOD_MAJOR_VERSION);
+			Popup("Error", msg);
+			exit(1);
+
+			if (minorVersion > MOD_MINOR_VERSION) {
+				sprintf(msg, "%s has minor version %d but requires %d or lower.\n", dll->fileName.c_str(), minorVersion, MOD_MINOR_VERSION);
+				Popup("Error", msg);
+				exit(1);
+			}
+		}
+	}
+
+    // Run Initialization routines on all mods
     for (DLL* dll: modDLLs) {
-        int majorVersion = ((int(*)())dll->ModMajorVersion)();
-        int minorVersion = ((int(*)())dll->ModMinorVersion)();
-        if (majorVersion != MOD_MAJOR_VERSION) {
-            sprintf(msg, "%s has major version %d but requires %d.\n", dll->fileName.c_str(), majorVersion, MOD_MAJOR_VERSION);
-            Popup("Error", msg);
-            exit(1);
+        ((void(*)())dll->ModPreInitialize)();
+    }
 
-            if (minorVersion > MOD_MINOR_VERSION) {
-                sprintf(msg, "%s has minor version %d but requires %d or lower.\n", dll->fileName.c_str(), minorVersion, MOD_MINOR_VERSION);
-                Popup("Error", msg);
-                exit(1);
-            }
-        }
-
-        // Run Initialization routines on all mods
-        for (DLL* dll: modDLLs) {
-            ((void(*)())dll->ModPreInitialize)();
-        }
-
-        for (DLL* dll: modDLLs) {
-            if (dll->ModInitialize) {
-                ((void(*)())dll->ModInitialize)();
-            }
+    for (DLL* dll: modDLLs) {
+        if (dll->ModInitialize) {
+            ((void(*)())dll->ModInitialize)();
         }
     }
+    
     if (hSelf) PrintLoadedMods();
     return;
 }
