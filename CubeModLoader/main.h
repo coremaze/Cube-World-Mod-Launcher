@@ -28,10 +28,11 @@ dllname->name = GetProcAddress(dllname->handle, #name);
 #define PREPARE_STACK "mov rax, rsp \n and rsp, 0xFFFFFFFFFFFFFFF0 \n push rax \n sub rsp, 0x28 \n"
 #define RESTORE_STACK "add rsp, 0x28 \n pop rsp \n"
 
+
+// These macros exist because "jmp [var]" or "jmp ds:[var]" any any other variants I have tried do not properly compile
 #define GETTER_VAR(vartype, varname)\
 	static __attribute__((used)) vartype varname;\
 	extern "C" vartype Get_##varname(){return varname;}
-
 #define DEREF_JMP(varname)\
 	"sub rsp, 8 \n"\
 	"push rax \n"\
