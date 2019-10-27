@@ -29,7 +29,7 @@ dllname->name = GetProcAddress(dllname->handle, #name);
 #define RESTORE_STACK "add rsp, 0x28 \n pop rsp \n"
 
 
-// These macros exist because "jmp [var]" or "jmp ds:[var]" any any other variants I have tried do not properly compile
+// These macros exist because "jmp [var]" or "jmp ds:[var]" and any other variants I have tried do not properly compile
 #define GETTER_VAR(vartype, varname)\
 	static __attribute__((used)) vartype varname;\
 	extern "C" vartype Get_##varname(){return varname;}
