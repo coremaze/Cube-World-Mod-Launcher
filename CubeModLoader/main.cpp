@@ -27,11 +27,13 @@ GETTER_VAR(void*, initterm_e); // A pointer to that function
 #include "callbacks/ChatHandler.h"
 #include "callbacks/P2PRequestHandler.h"
 #include "callbacks/CheckInventoryFullHandler.h"
+#include "callbacks/GameTickHandler.h"
 
 void SetupHandlers() {
     SetupChatHandler();
     SetupP2PRequestHandler();
     SetupCheckInventoryFullHandler();
+	SetupGameTickHandler();
 }
 
 
@@ -74,10 +76,7 @@ extern "C" void StartMods() {
         MUST_IMPORT(dll, ModMajorVersion);
         MUST_IMPORT(dll, ModMinorVersion);
         MUST_IMPORT(dll, ModPreInitialize);
-        IMPORT(dll, ModInitialize);
-        IMPORT(dll, HandleChat);
-        IMPORT(dll, HandleP2PRequest);
-        IMPORT(dll, HandleCheckInventoryFull);
+		MUST_IMPORT(dll, MakeMod);
     }
 
     // Ensure version compatibility
@@ -100,12 +99,11 @@ extern "C" void StartMods() {
     // Run Initialization routines on all mods
     for (DLL* dll: modDLLs) {
         ((void(*)())dll->ModPreInitialize)();
+		dll->mod = ((GenericMod*(*)())dll->MakeMod)();
     }
 
     for (DLL* dll: modDLLs) {
-        if (dll->ModInitialize) {
-            ((void(*)())dll->ModInitialize)();
-        }
+		dll->mod->Initialize();
     }
     
     if (hSelf) PrintLoadedMods();

@@ -1,9 +1,7 @@
 extern "C" int CheckInventoryFullHandler(void* player, void* item) {
     for (DLL* dll: modDLLs) {
-        if (dll->HandleCheckInventoryFull) {
-            if ( int result = ((int(*)(void*, void*))dll->HandleCheckInventoryFull)(player, item)  ){
-                return result;
-            }
+        if ( int result = dll->mod->OnCheckInventoryFull(player, item) ){
+            return result;
         }
     }
     return 0;

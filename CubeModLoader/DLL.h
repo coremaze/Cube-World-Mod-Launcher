@@ -2,6 +2,7 @@
 #define DLL_H
 #include <iostream>
 #include <windows.h>
+#include "GenericMod.h"
 
 class DLL
 {
@@ -10,14 +11,11 @@ class DLL
         HMODULE handle;
 
         FARPROC ModPreInitialize;
-        FARPROC ModInitialize;
         FARPROC ModMajorVersion;
         FARPROC ModMinorVersion;
+		FARPROC MakeMod;
 
-        // Callbacks
-        FARPROC HandleChat;
-        FARPROC HandleP2PRequest;
-        FARPROC HandleCheckInventoryFull;
+		GenericMod* mod;
 
         DLL(std::string fileName);
         HMODULE Load();

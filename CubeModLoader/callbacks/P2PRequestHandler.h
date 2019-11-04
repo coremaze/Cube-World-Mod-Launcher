@@ -1,9 +1,7 @@
 extern "C" int P2PRequestHandler(long long steamID) {
     for (DLL* dll: modDLLs) {
-        if (dll->HandleP2PRequest) {
-            if ( int result = ((int(*)(long long))dll->HandleP2PRequest)(steamID)  ){
-                return result;
-            }
+        if (int result = dll->mod->OnP2PRequest(steamID)) {
+			return result;
         }
     }
     return 0;
