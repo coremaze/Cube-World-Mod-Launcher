@@ -6,8 +6,8 @@
 #include "crc.h"
 #include "mutex.h"
 
-#define MOD_MAJOR_VERSION 4
-#define MOD_MINOR_VERSION 2
+#define MOD_MAJOR_VERSION 5
+#define MOD_MINOR_VERSION 1
 
 #define CUBE_VERSION "1.0.0-1"
 #define CUBE_PACKED_CRC 0xC7682619
