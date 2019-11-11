@@ -28,12 +28,14 @@ GETTER_VAR(void*, initterm_e); // A pointer to that function
 #include "callbacks/P2PRequestHandler.h"
 #include "callbacks/CheckInventoryFullHandler.h"
 #include "callbacks/GameTickHandler.h"
+#include "callbacks/PlayerDamageHandler.h"
 
 void SetupHandlers() {
     SetupChatHandler();
     SetupP2PRequestHandler();
     SetupCheckInventoryFullHandler();
 	SetupGameTickHandler();
+	SetypPlayerDamageHandler();
 }
 
 

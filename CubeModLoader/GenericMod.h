@@ -8,6 +8,7 @@ public:
 	virtual int OnCheckInventoryFull(void* player, void* item) { return 0; }
 	virtual int OnP2PRequest(uint64_t steamID) { return 0; }
 	virtual void OnGameTick(void* game) {}
+	virtual float ModifyPlayerDamage(void* player, float damage) { return damage; }
 };
 
 #endif // GENERICMOD_H
