@@ -9,7 +9,7 @@ extern "C" int CheckInventoryFullHandler(void* player, void* item) {
 
 GETTER_VAR(void*, ASMCheckInventoryFullHandler_jmpback);
 GETTER_VAR(void*, ASMCheckInventoryFullHandler_retn);
-void ASMCheckInventoryFullHandler() {
+__attribute__((naked)) void ASMCheckInventoryFullHandler() {
     asm(".intel_syntax \n"
 		PUSH_ALL
 

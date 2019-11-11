@@ -7,16 +7,23 @@ extern "C" float PlayerDamageHandler(void* player, float damage) {
 }
 
 GETTER_VAR(void*, ASMPlayerDamageHandler_jmpback);
-void ASMPlayerDamageHandler() {
+__attribute__((naked)) void ASMPlayerDamageHandler() {
 	asm(".intel_syntax \n"
 
 		// check if the creature is a player
-		"cmp byte ptr [rsi+0x60], 0x0 \n"
+		"cmp byte ptr [rsi+0x60], 0 \n"
 		"jne ASMPlayerDamageHandlerNotPlayer \n"
+
+		"push rdx \n"
+		"push rdi \n"
+
+		"movq rdx, xmm1 \n"
+		"movq rdi, xmm2 \n"
 
 		PUSH_ALL
 
-		"mov rcx, rbx \n" // cube::Creature*
+		"mov rcx, rsi \n" // cube::Creature*
+		"movss xmm1, xmm0 \n"
 
 		PREPARE_STACK
 
@@ -25,6 +32,12 @@ void ASMPlayerDamageHandler() {
 		RESTORE_STACK
 
 		POP_ALL
+
+		"movq xmm1, rdx \n"
+		"movq xmm2, rdi \n"
+
+		"pop rdi \n"
+		"pop rdx \n"
 
 		"ASMPlayerDamageHandlerNotPlayer: \n"
 
