@@ -32,6 +32,7 @@ GETTER_VAR(void*, initterm_e); // A pointer to that function
 #include "callbacks/PlayerCritHandler.h"
 #include "callbacks/PlayerHealthHandler.h"
 #include "callbacks/PlayerResistanceHandler.h"
+#include "callbacks/PlayerArmorHandler.h"
 
 void SetupHandlers() {
     SetupChatHandler();
@@ -42,6 +43,7 @@ void SetupHandlers() {
 	SetupPlayerCritHandler();
 	SetupPlayerHealthHandler();
 	SetupPlayerResistanceHandler();
+	SetupPlayerArmorHandler();
 }
 
 
