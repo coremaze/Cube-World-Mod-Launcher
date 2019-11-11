@@ -1,8 +1,8 @@
 extern "C" float PlayerDamageHandler(void* player, float damage) {
 	float modifiedDamage = damage;
-    for (DLL* dll: modDLLs) {
+	for (DLL* dll : modDLLs) {
 		modifiedDamage = dll->mod->ModifyPlayerDamage(player, modifiedDamage);
-    }
+	}
 	return modifiedDamage;
 }
 
@@ -35,10 +35,10 @@ void ASMPlayerDamageHandler() {
 		"pop r14 \n"
 
 		DEREF_JMP(ASMPlayerDamageHandler_jmpback)
-	   );
+	);
 }
 
 void SetupPlayerDamageHandler() {
-    WriteFarJMP(Offset(base, 0x4FD2B), (void*)&ASMPlayerDamageHandler);
+	WriteFarJMP(Offset(base, 0x4FD2B), (void*)&ASMPlayerDamageHandler);
 	ASMPlayerDamageHandler_jmpback = Offset(base, 0x4FD3A);
 }
