@@ -7,7 +7,7 @@
 #include "mutex.h"
 
 #define MOD_MAJOR_VERSION 5
-#define MOD_MINOR_VERSION 1
+#define MOD_MINOR_VERSION 2
 
 #define CUBE_VERSION "1.0.0-1"
 #define CUBE_PACKED_CRC 0xC7682619
@@ -28,12 +28,26 @@ GETTER_VAR(void*, initterm_e); // A pointer to that function
 #include "callbacks/P2PRequestHandler.h"
 #include "callbacks/CheckInventoryFullHandler.h"
 #include "callbacks/GameTickHandler.h"
+#include "callbacks/PlayerDamageHandler.h"
+#include "callbacks/PlayerCritHandler.h"
+#include "callbacks/PlayerHealthHandler.h"
+#include "callbacks/PlayerResistanceHandler.h"
+#include "callbacks/PlayerArmorHandler.h"
+#include "callbacks/PlayerHasteHandler.h"
+#include "callbacks/PlayerStaminaRegenHandler.h"
 
 void SetupHandlers() {
     SetupChatHandler();
     SetupP2PRequestHandler();
     SetupCheckInventoryFullHandler();
 	SetupGameTickHandler();
+	SetupPlayerDamageHandler();
+	SetupPlayerCritHandler();
+	SetupPlayerHealthHandler();
+	SetupPlayerResistanceHandler();
+	SetupPlayerArmorHandler();
+	SetupPlayerHasteHandler();
+	SetupPlayerStaminaRegenHandler();
 }
 
 
