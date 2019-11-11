@@ -35,7 +35,7 @@ void SetupHandlers() {
     SetupP2PRequestHandler();
     SetupCheckInventoryFullHandler();
 	SetupGameTickHandler();
-	SetypPlayerDamageHandler();
+	SetupPlayerDamageHandler();
 }
 
 
