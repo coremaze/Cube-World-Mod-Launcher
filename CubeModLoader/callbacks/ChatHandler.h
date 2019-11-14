@@ -1,9 +1,13 @@
 extern "C" int ChatHandler(void* msg) {
-    for (DLL* dll: modDLLs) {
-		if (dll->mod->OnChat(msg)) {
-			return 1;
+	for (uint64_t priority = 0; priority <= 5; priority += 1) {
+		for (DLL* dll : modDLLs) {
+			if (dll->mod->OnChatPriority == (GenericMod::Priority)priority) {
+				if (dll->mod->OnChat(msg)) {
+					return 1;
+				}
+			}
 		}
-    }
+	}
     return 0;
 }
 

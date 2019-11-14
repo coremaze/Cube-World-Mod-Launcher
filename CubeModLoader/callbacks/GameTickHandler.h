@@ -1,7 +1,11 @@
 extern "C" void GameTickHandler(void* game) {
-    for (DLL* dll: modDLLs) {
-		dll->mod->OnGameTick(game);
-    }
+	for (uint64_t priority = 0; priority <= 5; priority += 1) {
+		for (DLL* dll : modDLLs) {
+			if (dll->mod->OnGameTickPriority == (GenericMod::Priority)priority) {
+				dll->mod->OnGameTick(game);
+			}
+		}
+	}
 }
 
 GETTER_VAR(void*, ASMGameTickHandler_jmpback);

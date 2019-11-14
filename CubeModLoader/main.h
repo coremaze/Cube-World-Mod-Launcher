@@ -41,7 +41,7 @@ dllname->name = GetProcAddress(dllname->handle, #name);
 	"pop rax \n"\
 	"ret \n"
 
-#define global static __attribute__((used))
+#define GLOBAL static __attribute__((used))
 
 void* Offset(void* x1, uint64_t x2);
 

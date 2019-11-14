@@ -18,22 +18,32 @@
 
 using namespace std;
 
-global void* base; // Module base
-global vector <DLL*> modDLLs; // Every mod we've loaded
-global HMODULE hSelf; // A handle to ourself, to prevent being unloaded
-global void** initterm_eReference; // A pointer-pointer to a function which is run extremely soon after starting, or after being unpacked
+GLOBAL void* base; // Module base
+GLOBAL vector <DLL*> modDLLs; // Every mod we've loaded
+GLOBAL HMODULE hSelf; // A handle to ourself, to prevent being unloaded
+GLOBAL void** initterm_eReference; // A pointer-pointer to a function which is run extremely soon after starting, or after being unpacked
 GETTER_VAR(void*, initterm_e); // A pointer to that function
 
 #include "callbacks/ChatHandler.h"
 #include "callbacks/P2PRequestHandler.h"
 #include "callbacks/CheckInventoryFullHandler.h"
 #include "callbacks/GameTickHandler.h"
+#include "callbacks/ZoneGeneratedHandler.h"
+#include "callbacks/WindowProcHandler.h"
+#include "callbacks/GetKeyboardStateHandler.h"
+#include "callbacks/GetMouseStateHandler.h"
+#include "callbacks/PresentHandler.h"
 
 void SetupHandlers() {
     SetupChatHandler();
     SetupP2PRequestHandler();
     SetupCheckInventoryFullHandler();
 	SetupGameTickHandler();
+	SetupZoneGeneratedHandler();
+	SetupWindowProcHandler();
+	SetupGetKeyboardStateHandler();
+	SetupGetMouseStateHandler();
+	SetupPresentHandler();
 }
 
 
@@ -88,12 +98,14 @@ extern "C" void StartMods() {
 			Popup("Error", msg);
 			exit(1);
 
-			if (minorVersion > MOD_MINOR_VERSION) {
-				sprintf(msg, "%s has minor version %d but requires %d or lower.\n", dll->fileName.c_str(), minorVersion, MOD_MINOR_VERSION);
-				Popup("Error", msg);
-				exit(1);
-			}
 		}
+
+		if (minorVersion > MOD_MINOR_VERSION) {
+			sprintf(msg, "%s has minor version %d but requires %d or lower.\n", dll->fileName.c_str(), minorVersion, MOD_MINOR_VERSION);
+			Popup("Error", msg);
+			exit(1);
+		}
+		
 	}
 
     // Run Initialization routines on all mods
