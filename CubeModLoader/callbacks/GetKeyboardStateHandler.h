@@ -1,5 +1,5 @@
 extern "C" int GetKeyboardStateHandler(BYTE* diKeys) {
-	for (uint64_t priority = 0; priority <= 5; priority += 1) {
+	for (uint8_t priority = 0; priority <= 4; priority += 1) {
 		for (DLL* dll : modDLLs) {
 			if (dll->mod->OnGetKeyboardStatePriority == (GenericMod::Priority)priority) {
 				dll->mod->OnGetKeyboardState(diKeys);

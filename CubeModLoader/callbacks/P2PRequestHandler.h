@@ -1,5 +1,5 @@
 extern "C" int P2PRequestHandler(long long steamID) {
-	for (uint64_t priority = 0; priority <= 5; priority += 1) {
+	for (uint8_t priority = 0; priority <= 4; priority += 1) {
 		for (DLL* dll : modDLLs) {
 			if (dll->mod->OnP2PRequestPriority == (GenericMod::Priority)priority) {
 				if (int result = dll->mod->OnP2PRequest(steamID)) {

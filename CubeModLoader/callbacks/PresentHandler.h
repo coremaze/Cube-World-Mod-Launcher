@@ -1,5 +1,5 @@
 extern "C" int PresentHandler(void* SwapChain, UINT SyncInterval, UINT Flags) { // Note that this hooks a METHOD, so swapchain is the first argument
-	for (uint64_t priority = 0; priority <= 5; priority += 1) {
+	for (uint8_t priority = 0; priority <= 4; priority += 1) {
 		for (DLL* dll : modDLLs) {
 			if (dll->mod->OnPresentPriority == (GenericMod::Priority)priority) {
 				dll->mod->OnPresent(SwapChain, SyncInterval, Flags);

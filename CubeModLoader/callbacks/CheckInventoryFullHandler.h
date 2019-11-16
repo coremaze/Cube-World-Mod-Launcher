@@ -1,5 +1,5 @@
 extern "C" int CheckInventoryFullHandler(void* player, void* item) {
-	for (uint64_t priority = 0; priority <= 5; priority += 1) {
+	for (uint8_t priority = 0; priority <= 4; priority += 1) {
 		for (DLL* dll : modDLLs) {
 			if (dll->mod->OnCheckInventoryFullPriority == (GenericMod::Priority)priority) {
 				if (int result = dll->mod->OnCheckInventoryFull(player, item)) {

@@ -1,8 +1,8 @@
-extern "C" int ZoneGeneratedHandler(void* world, void* zone) {
-	for (uint64_t priority = 0; priority <= 5; priority += 1) {
+extern "C" int ZoneGeneratedHandler(void* zone) {
+	for (uint8_t priority = 0; priority <= 4; priority += 1) {
 		for (DLL* dll : modDLLs) {
 			if (dll->mod->OnZoneGeneratedPriority == (GenericMod::Priority)priority) {
-				dll->mod->OnZoneGenerated(world, zone);
+				dll->mod->OnZoneGenerated(zone);
 			}
 		}
 	}
@@ -14,8 +14,7 @@ void ASM_ZoneGeneratedHandler() {
     asm(".intel_syntax \n"
 		PUSH_ALL
 
-		"mov rcx, r14 \n" // the world*
-        "mov rdx, rbp \n" // new zone*
+        "mov rcx, rbp \n" // new zone*
 
         PREPARE_STACK
 

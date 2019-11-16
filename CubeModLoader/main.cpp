@@ -6,7 +6,7 @@
 #include "crc.h"
 #include "mutex.h"
 
-#define MOD_MAJOR_VERSION 5
+#define MOD_MAJOR_VERSION 6
 #define MOD_MINOR_VERSION 1
 
 #define CUBE_VERSION "1.0.0-1"
@@ -29,10 +29,20 @@ GETTER_VAR(void*, initterm_e); // A pointer to that function
 #include "callbacks/CheckInventoryFullHandler.h"
 #include "callbacks/GameTickHandler.h"
 #include "callbacks/ZoneGeneratedHandler.h"
+#include "callbacks/ZoneDestroyHandler.h"
 #include "callbacks/WindowProcHandler.h"
 #include "callbacks/GetKeyboardStateHandler.h"
 #include "callbacks/GetMouseStateHandler.h"
 #include "callbacks/PresentHandler.h"
+#include "callbacks/CreatureArmorCalculatedHandler.h"
+#include "callbacks/CreatureCriticalCalculatedHandler.h"
+#include "callbacks/CreatureAttackPowerCalculatedHandler.h"
+#include "callbacks/CreatureSpellPowerCalculatedHandler.h"
+#include "callbacks/CreatureHasteCalculatedHandler.h"
+#include "callbacks/CreatureHPCalculatedHandler.h"
+#include "callbacks/CreatureResistanceCalculatedHandler.h"
+#include "callbacks/CreatureRegenerationCalculatedHandler.h"
+#include "callbacks/CreatureManaGenerationCalculatedHandler.h"
 
 void SetupHandlers() {
     SetupChatHandler();
@@ -40,10 +50,20 @@ void SetupHandlers() {
     SetupCheckInventoryFullHandler();
 	SetupGameTickHandler();
 	SetupZoneGeneratedHandler();
+	SetupZoneDestroyHandler();
 	SetupWindowProcHandler();
 	SetupGetKeyboardStateHandler();
 	SetupGetMouseStateHandler();
 	SetupPresentHandler();
+	SetupCreatureArmorCalculatedHandler();
+	SetupCreatureCriticalCalculatedHandler();
+	SetupCreatureAttackPowerCalculatedHandler();
+	SetupCreatureSpellPowerCalculatedHandler();
+	SetupCreatureHasteCalculatedHandler();
+	SetupCreatureHPCalculatedHandler();
+	SetupCreatureResistanceCalculatedHandler();
+	SetupCreatureRegenerationCalculatedHandler();
+	SetupCreatureManaGenerationCalculatedHandler();
 }
 
 

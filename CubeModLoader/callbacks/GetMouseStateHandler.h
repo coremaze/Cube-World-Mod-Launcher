@@ -1,5 +1,5 @@
 extern "C" int GetMouseStateHandler(void* diMouse) {
-	for (uint64_t priority = 0; priority <= 5; priority += 1) {
+	for (uint8_t priority = 0; priority <= 4; priority += 1) {
 		for (DLL* dll : modDLLs) {
 			if (dll->mod->OnGetMouseStatePriority == (GenericMod::Priority)priority) {
 				dll->mod->OnGetMouseState(diMouse);

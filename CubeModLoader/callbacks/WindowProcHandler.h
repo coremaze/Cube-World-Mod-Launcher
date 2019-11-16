@@ -1,5 +1,5 @@
 extern "C" int WindowProcHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	for (uint64_t priority = 0; priority <= 5; priority += 1) {
+	for (uint8_t priority = 0; priority <= 4; priority += 1) {
 		for (DLL* dll : modDLLs) {
 			if (dll->mod->OnWindowProcPriority == (GenericMod::Priority)priority) {
 				if (int result = dll->mod->OnWindowProc(hwnd, uMsg, wParam, lParam)) {
