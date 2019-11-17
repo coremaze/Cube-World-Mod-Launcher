@@ -15,6 +15,7 @@
 
 #define MODLOADER_NAME "CubeModLoader"
 
+#define USE_CHECKSUM
 
 using namespace std;
 
@@ -261,10 +262,14 @@ extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD
             // Patch some code to run StartMods. This method makes it work with AND without SteamStub.
             PatchInitterm_ePtr();
         } else {
+#ifndef USE_CHECKSUM
+			PatchInitterm_ePtr();
+#else
             sprintf(msg, "%s does not seem to be version %s. CRC %08X", cubePath, CUBE_VERSION, checksum);
             Popup("Error", msg);
             PatchFreeImage();
             return true;
+#endif
         }
 
         Sleep(250);
