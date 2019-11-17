@@ -56,7 +56,7 @@ public:
 	virtual void OnCreatureSpellPowerCalculated(void* creature, float* power) {}
 
 	Priority OnCreatureHasteCalculatedPriority = NormalPriority;
-	virtual void OnCreatureHasteCalculated(void* creature, float* power) {}
+	virtual void OnCreatureHasteCalculated(void* creature, float* haste) {}
 
 	Priority OnCreatureHPCalculatedPriority = NormalPriority;
 	virtual void OnCreatureHPCalculated(void* creature, float* hp) {}
