@@ -69,6 +69,12 @@ public:
 
 	Priority OnCreatureManaGenerationCalculatedPriority = NormalPriority;
 	virtual void OnCreatureManaGenerationCalculated(void* creature, float* manaGeneration) {}
+
+	Priority OnChunkRemeshPriority = NormalPriority;
+	virtual void OnChunkRemesh(void* zone) {}
+
+	Priority OnChunkRemeshedPriority = NormalPriority;
+	virtual void OnChunkRemeshed(void* zone) {}
 };
 
 #endif // GENERICMOD_H

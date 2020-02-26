@@ -6,7 +6,7 @@
 #include "crc.h"
 #include "mutex.h"
 
-#define MOD_MAJOR_VERSION 6
+#define MOD_MAJOR_VERSION 7
 #define MOD_MINOR_VERSION 1
 
 #define CUBE_VERSION "1.0.0-1"
@@ -44,6 +44,8 @@ GETTER_VAR(void*, initterm_e); // A pointer to that function
 #include "callbacks/CreatureResistanceCalculatedHandler.h"
 #include "callbacks/CreatureRegenerationCalculatedHandler.h"
 #include "callbacks/CreatureManaGenerationCalculatedHandler.h"
+#include "callbacks/ChunkRemeshHandler.h"
+#include "callbacks/ChunkRemeshedHandler.h"
 
 void SetupHandlers() {
     SetupChatHandler();
@@ -65,6 +67,8 @@ void SetupHandlers() {
 	SetupCreatureResistanceCalculatedHandler();
 	SetupCreatureRegenerationCalculatedHandler();
 	SetupCreatureManaGenerationCalculatedHandler();
+	SetupChunkRemeshHandler();
+	SetupChunkRemeshedHandler();
 }
 
 
@@ -114,15 +118,21 @@ extern "C" void StartMods() {
 	for (DLL* dll : modDLLs) {
 		int majorVersion = ((int(*)())dll->ModMajorVersion)();
 		int minorVersion = ((int(*)())dll->ModMinorVersion)();
-		if (majorVersion != MOD_MAJOR_VERSION) {
-			sprintf(msg, "%s has major version %d but requires %d.\n", dll->fileName.c_str(), majorVersion, MOD_MAJOR_VERSION);
+
+		if (majorVersion > MOD_MAJOR_VERSION) {
+			sprintf(msg, "%s has major version %d but requires %d. You should update your mod loader.\n", dll->fileName.c_str(), majorVersion, MOD_MAJOR_VERSION);
 			Popup("Error", msg);
 			exit(1);
+		}
 
+		if (majorVersion < MOD_MAJOR_VERSION) {
+			sprintf(msg, "%s has major version %d but requires %d. The mod author needs to update this mod to CWSDK %d.X\n", dll->fileName.c_str(), majorVersion, MOD_MAJOR_VERSION, MOD_MAJOR_VERSION);
+			Popup("Error", msg);
+			exit(1);
 		}
 
 		if (minorVersion > MOD_MINOR_VERSION) {
-			sprintf(msg, "%s has minor version %d but requires %d or lower.\n", dll->fileName.c_str(), minorVersion, MOD_MINOR_VERSION);
+			sprintf(msg, "%s has minor version %d but requires %d or lower. You should update your mod loader.\n", dll->fileName.c_str(), minorVersion, MOD_MINOR_VERSION);
 			Popup("Error", msg);
 			exit(1);
 		}
