@@ -21,6 +21,7 @@ using namespace std;
 
 GLOBAL void* base; // Module base
 GLOBAL vector <DLL*> modDLLs; // Every mod we've loaded
+GLOBAL vector <DLL*> legacyDLLs; // cwmods
 GLOBAL HMODULE hSelf; // A handle to ourself, to prevent being unloaded
 GLOBAL void** initterm_eReference; // A pointer-pointer to a function which is run extremely soon after starting, or after being unpacked
 GETTER_VAR(void*, initterm_e); // A pointer to that function
@@ -148,7 +149,21 @@ extern "C" void StartMods() {
     for (DLL* dll: modDLLs) {
 		dll->mod->Initialize();
     }
-    
+
+	// Load legacy cwmods. Don't use this.
+	hFind = FindFirstFile("Mods\\*.cwmod", &data);
+	if (hFind != INVALID_HANDLE_VALUE) {
+		do {
+			// We should be loaded into the application's address space, so we can just LoadLibraryA
+			DLL* dll = new DLL(string("Mods\\") + data.cFileName);
+			dll->Load();
+			printf("Loaded %s\n", dll->fileName.c_str());
+			legacyDLLs.push_back(dll);
+		} while (FindNextFile(hFind, &data));
+		FindClose(hFind);
+	}
+
+
     if (hSelf) PrintLoadedMods();
     return;
 }
@@ -208,6 +223,13 @@ void PrintLoadedMods() {
     }
 	if (modDLLs.size() == 0) {
 		mods += "<No mods>\n";
+	}
+	if (legacyDLLs.size() != 0) {
+		mods += "\nLegacy mods loaded:\n";
+		for (DLL* dll : legacyDLLs) {
+			mods += dll->fileName;
+			mods += "\n";
+		}
 	}
     Popup("Loaded Mods", mods.c_str());
 }
