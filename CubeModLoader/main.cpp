@@ -206,6 +206,9 @@ void PrintLoadedMods() {
         mods += dll->fileName;
         mods += "\n";
     }
+	if (modDLLs.size() == 0) {
+		mods += "<No mods>\n";
+	}
     Popup("Loaded Mods", mods.c_str());
 }
 
